@@ -30,21 +30,21 @@ dayOfWeekColor = {
 
 colorMap = {
     '01d':(255,140,0), # clear sky
-    '01n':(0,0,0),
+    '01n':(208, 190, 71),
     '02d':(0,0,0), # few clouds
     '02n':(0,0,0),
     '03d':(0,0,0), # scattered clouds
-    '03n':(255,0,0),
-    '04d':(255, 255, 0), # broken clouds
+    '03n':(0,0,0),
+    '04d':(0,0,0), # broken clouds
     '04n':(0,0,0),
     '09d':(0,0,0), # shower rain
     '09n':(0,0,0),
-    '10d':(0,0,0), # rain
-    '10n':(0,0,0),
-    '11d':(0,0,0), # thunderstorm
-    '11n':(0,0,0),
-    '13d':(0,0,0), # snow
-    '13n':(0,0,0),
+    '10d':(0,0,255), # rain
+    '10n':(0,0,255),
+    '11d':(255,0,0), # thunderstorm
+    '11n':(255,0,0),
+    '13d':(0,255,255), # snow
+    '13n':(0,255,255),
     '50d':(0,0,0), # fog
     '50n':(0,0,0),
 }
@@ -134,10 +134,7 @@ def drawWeather(wi, cv):
     epoch = int(wi.currentWeatherInfo[u'dt'])
     dateString = time.strftime("%B %-d", time.localtime(epoch))
     weekDayString = time.strftime("%A", time.localtime(epoch))
-    
-    
-
-    print("day of week : " + str(time.strftime("%w", time.localtime(epoch))))
+    weekDayNumber = time.strftime("%w", time.localtime(epoch))
 
     # date 
     draw.text((15 , 5), dateString, (0,0,0),font =dateFont)
@@ -146,17 +143,22 @@ def drawWeather(wi, cv):
     offsetX = 10
     offsetY = 40
     
+    tempColor = (0,0,0)
+    if temp_cur < -10:
+        tempColor = (0,0,255)
+    if temp_cur > 28:
+        tempColor = (255,0,0)
     # draw date string
-    draw.text((5 + offsetX , 35 + offsetY), "Temperature", (0,0,0),font =textFont)
-    draw.text((0 + offsetX, 50 + offsetY), "%2.1fc" % temp_cur, (0,0,0),font =tempurtureFont)
+    draw.text((5 + offsetX , 35 + offsetY), "Temperature", tempColor,font =textFont)
+    draw.text((0 + offsetX, 50 + offsetY), "%2.0fC" % temp_cur, tempColor,font =tempurtureFont)
     draw.text((5 + offsetX , 175 + offsetY), "Feels like", (0,0,0),font =textFont)
-    draw.text((10 + offsetX, 200 + offsetY), "%2.1fc" % temp_cur_feels, (0,0,0),font =feelslikeFont)
+    draw.text((10 + offsetX, 200 + offsetY), "%2.0fC" % temp_cur_feels, (0,0,0),font =feelslikeFont)
 
     # humidity
     draw.text((width - 8, 270 + offsetY), str(humidity) + "%", (0,0,0), anchor="rs",font =textFont)
 
     # draw current weather icon
-    draw.text((430 + offsetX, 80 + offsetY), iconMap[icon], colorMap[icon], anchor="ma",font=iconFont)
+    draw.text((430 + offsetX, 50 + offsetY), iconMap[icon], colorMap[icon], anchor="ma",font=iconFont)
 
     draw.text((width - 8, 35 + offsetY), description, (0,0,0), anchor="ra", font =textFont)
 
@@ -177,11 +179,11 @@ def drawWeather(wi, cv):
         columnWidth = 600 / 4
 
         
-        draw.text((20 + (fi * columnWidth), offsetY + 220), finfo.time, (0,0,0),anchor="la", font =smallFont)
-        draw.text((130 + (fi * columnWidth), offsetY + 220), ("%2.1f" % finfo.temp), (0,0,0), anchor="ra", font=smallFont )
+        draw.text((30 + (fi * columnWidth), offsetY + 220), finfo.time, (0,0,0),anchor="la", font =smallFont)
+        draw.text((120 + (fi * columnWidth), offsetY + 220), ("%2.1f" % finfo.temp), (0,0,0), anchor="ra", font=smallFont )
         
         draw.text(((columnWidth / 2) + (fi * columnWidth),  offsetY + 200), finfo.description, (0,0,0),anchor="ma", font =smallFont)
-        draw.text((90 + (fi * columnWidth), offsetY + 110), iconMap[finfo.icon], colorMap[finfo.icon], anchor="ma",font =iconForecastFont)
+        draw.text((70 + (fi * columnWidth), offsetY + 100), iconMap[finfo.icon], colorMap[finfo.icon], anchor="ma",font =iconForecastFont)
 
 
 wi = weatherInfomation()
@@ -190,7 +192,7 @@ wi.loadWeatherData()
 cv = Image.new("RGB", canvasSize, (255, 255, 255))
 #cv = cv.rotate(90, expand=True)
 drawWeather(wi, cv)
-#cv.save("test.png")
+cv.save("test.png")
 #cv = cv.rotate(-90, expand=True)
 inky = Inky()
 inky.set_image(cv, saturation=saturation)
