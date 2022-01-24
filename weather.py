@@ -172,9 +172,9 @@ def drawWeather(wi, cv):
         alertInEffectString = time.strftime('%B %-d, %H:%m %p', time.localtime(wi.weatherInfo[u'alerts'][0][u'start']))
         #+ " - " + time.strftime('%B %-d, %-I %p', time.localtime(wi.weatherInfo[u'alerts'][0][u'end']))
         # + " from " + str(wi.weatherInfo[u'alerts'][0][u'sender_name'])
+
         # remove "\n###\n" and \n\n
         desc = wi.weatherInfo[u'alerts'][0][u'description'].replace("\n###\n", '')
-        print(desc)
         desc = desc.replace("\n\n", '\n')
         desc = desc.replace("\r\n", '\n')
         desc = desc.replace("\n\n", '\n')
@@ -217,7 +217,7 @@ def drawWeather(wi, cv):
         finfo.icon     = wi.weatherInfo[u'hourly'][fi][u'weather'][0][u'icon']
         finfo.description = wi.weatherInfo[u'hourly'][fi][u'weather'][0][u'description'] # show the first 
 
-        columnWidth = 600 / forecastRange
+        columnWidth = width / forecastRange
         textColor = (50,50,50)
         draw.text((30 + (fi * columnWidth), offsetY + 220), finfo.time,textColor,anchor="la", font =smallFont)
         draw.text((120 + (fi * columnWidth), offsetY + 220), ("%2.1f" % finfo.temp), textColor, anchor="ra", font=smallFont )
