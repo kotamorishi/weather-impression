@@ -161,7 +161,7 @@ def drawWeather(wi, cv):
     # draw.text((width - 8, 270 + offsetY), str(humidity) + "%", (0,0,0), anchor="rs",font =textFont)
 
     # draw current weather icon
-    draw.text((430 + offsetX, 50 + offsetY), iconMap[icon], colorMap[icon], anchor="ma",font=iconFont)
+    draw.text((440 + offsetX, 40 + offsetY), iconMap[icon], colorMap[icon], anchor="ma",font=iconFont)
 
     draw.text((width - 8, 35 + offsetY), description, (0,0,0), anchor="ra", font =textFont)
 
@@ -246,4 +246,4 @@ cv.save("test.png")
 #cv = cv.rotate(-90, expand=True)
 inky = Inky()
 inky.set_image(cv, saturation=saturation)
-inky.show()
+#inky.show()
