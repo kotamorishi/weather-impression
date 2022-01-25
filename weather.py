@@ -45,8 +45,8 @@ colorMap = {
     '10n':(0,0,255),
     '11d':(255,0,0), # thunderstorm
     '11n':(255,0,0),
-    '13d':(0,255,255), # snow
-    '13n':(0,255,255),
+    '13d':(0,0,255), # snow
+    '13n':(0,0,255),
     '50d':(0,0,0), # fog
     '50n':(0,0,0),
 }
@@ -175,20 +175,29 @@ def drawWeather(wi, cv):
 
         # remove "\n###\n" and \n\n
         desc = wi.weatherInfo[u'alerts'][0][u'description'].replace("\n###\n", '')
-        desc = desc.replace("\n\n", '\n')
-        desc = desc.replace("\r\n", '\n')
-        desc = desc.replace("\n\n", '\n')
+        desc = desc.replace("\n\n", '')
+        desc = desc.replace("https://", '') # remove https://
+        desc = re.sub(r"([A-Za-z]*:)", "\n\g<1>", desc)
+        #print(desc)
+        #desc = re.sub(r"([A-Za-z]*\.)", "\g<1>\n", desc)
+        #desc = re.sub(r"([A-Za-z]*\.)", "\g<1>\n", desc)
+        desc = re.sub(r'((?=.{80})(.{0,79}([\.[ ]|[ ]))|.{0,79})', "\g<1>\n", desc)
 
+        desc = desc.replace("\n\n", '')
+#        desc = re.sub(r"^\n", "HAHAHA", desc) # eliminate blank lines
+        
         #desc  = re.sub("(.{150})", "\\1\n", desc, 0, re.DOTALL)
+        #print("=========>")
+        #print(desc)
 
-        descFont = ImageFont.truetype(lightFont, 14)
 
-        draw.text((5 + offsetX , 215), wi.weatherInfo[u'alerts'][0][u'event'] , (255,0,0),anchor="la", font =textFont)
+        descFont = ImageFont.truetype(defaultFont, 14)
+
+        draw.text((5 + offsetX , 215), wi.weatherInfo[u'alerts'][0][u'event'].capitalize() , (255,0,0),anchor="la", font =textFont)
         draw.text((5 + offsetX , 240), alertInEffectString + "/" + wi.weatherInfo[u'alerts'][0][u'sender_name'] , (0,0,0), font=textFont12)
 
-        draw.text((5 + offsetX, 260), desc, (255,0,0),anchor="la", font =descFont)
+        draw.text((5 + offsetX, 270), desc, (255,0,0),anchor="la", font =descFont)
         return
-
     # feels like
     draw.text((5 + offsetX , 175 + 40), "Feels like", (0,0,0),font =textFont)
     draw.text((10 + offsetX, 200 + 40), "%2.0f" % temp_cur_feels, (0,0,0),font =feelslikeFont)
@@ -237,4 +246,4 @@ cv.save("test.png")
 #cv = cv.rotate(-90, expand=True)
 inky = Inky()
 inky.set_image(cv, saturation=saturation)
-inky.show() 
+inky.show()
