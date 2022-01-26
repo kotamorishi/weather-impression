@@ -112,7 +112,7 @@ class weatherInfomation(object):
             self.forecast_api_uri = 'https://api.openweathermap.org/data/2.5/onecall?&lat=' + self.lat + '&lon=' + self.lon +'&appid=' + self.api_key + '&exclude=daily&units=metric'
             self.loadWeatherData()
         except:
-            self.one_time_message = "Configuration file is not found or settings are wrong.\n\nplease create the file at " + project_root + "/config.txt"
+            self.one_time_message = "Configuration file is not found or settings are wrong.\n\nplease check the file : " + project_root + "/config.txt"
             return
 
         # load one time messge and remove it from the file. one_time_message can be None.
@@ -271,11 +271,11 @@ def update():
     cv = Image.new("RGB", canvasSize, (255, 255, 255))
     #cv = cv.rotate(90, expand=True)
     drawWeather(wi, cv)
-    cv.save("test.png")
+    #cv.save("test.png")
     #cv = cv.rotate(-90, expand=True)
     inky = Inky()
     inky.set_image(cv, saturation=saturation)
-    #inky.show()
+    inky.show()
 
 if __name__ == "__main__":
     update()
