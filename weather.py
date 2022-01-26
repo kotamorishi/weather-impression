@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from os import path, DirEntry
+import os
 import sys
 import math
 import time
@@ -15,9 +16,10 @@ saturation = 0.5
 canvasSize = (600, 448)
 
 # font file path(Adjust or change whatever you want)
-defaultFont = "/home/pi/weather-impression/fonts/Roboto-Black.ttf"
-lightFont = "/home/pi/weather-impression/fonts/Roboto-Light.ttf"
-thinFont = "/home/pi/weather-impression/fonts/Roboto-Thin.ttf"
+project_root = os.getcwd()
+defaultFont = project_root + "/fonts/Roboto-Black.ttf"
+lightFont = project_root + "/fonts/Roboto-Light.ttf"
+thinFont = project_root + "/fonts/Roboto-Thin.ttf"
 
 dayOfWeekColor = {
     '0':(0, 0, 0),
@@ -99,17 +101,34 @@ class weatherInfomation(object):
         #load configuration from config.txt using configparser
         import configparser
         self.config = configparser.ConfigParser()
-        self.config.read_file(open('/home/pi/weather-impression/config.txt'))
-        self.lat = self.config.get('openweathermap', 'LAT', raw=False)
-        self.lon = self.config.get('openweathermap', 'LON', raw=False)
-        self.api_key = self.config.get('openweathermap', 'API_KEY', raw=False)
-        # API document at https://openweathermap.org/api/one-call-api
-        self.forecast_api_uri = 'https://api.openweathermap.org/data/2.5/onecall?&lat=' + self.lat + '&lon=' + self.lon +'&appid=' + self.api_key + '&exclude=daily&units=metric'
+        try:
+            self.config.read_file(open(project_root + '/config.txt'))
+            self.lat = self.config.get('openweathermap', 'LAT', raw=False)
+            self.lon = self.config.get('openweathermap', 'LON', raw=False)
+            self.show_warn = self.config.get('openweathermap', 'SHOW_WARN', raw=False)
+            self.forecast_interval = self.config.get('openweathermap', 'FORECAST_INTERVAL', raw=False)
+            self.api_key = self.config.get('openweathermap', 'API_KEY', raw=False)
+            # API document at https://openweathermap.org/api/one-call-api
+            self.forecast_api_uri = 'https://api.openweathermap.org/data/2.5/onecall?&lat=' + self.lat + '&lon=' + self.lon +'&appid=' + self.api_key + '&exclude=daily&units=metric'
+            self.loadWeatherData()
+        except:
+            self.one_time_message = "Configuration file is not found or settings are wrong.\n\nplease create the file at " + project_root + "/config.txt"
+            return
+
+        # load one time messge and remove it from the file. one_time_message can be None.
+        try:
+            self.one_time_message = self.config.get('openweathermap', 'one_time_message', raw=False)
+            self.config.set("openweathermap", "one_time_message", "")
+            # remove it.
+            with open(project_root + '/config.txt', 'w') as configfile:
+                self.config.write(configfile)
+        except:
+            self.one_time_message = ""
+            pass
 
     def loadWeatherData(self):
         import requests
         self.weatherInfo = requests.get(self.forecast_api_uri).json()
-        #print(self.weatherInfo)
 
 # draw current weather and forecast into canvas
 def drawWeather(wi, cv):
@@ -125,9 +144,15 @@ def drawWeather(wi, cv):
     textFont12 = ImageFont.truetype(defaultFont, 12)
     lightFont14 = ImageFont.truetype(lightFont, 14)
 
-    iconFont = ImageFont.truetype("/usr/share/fonts/weathericons-regular-webfont.ttf", 160)
-    iconForecastFont = ImageFont.truetype("/usr/share/fonts/weathericons-regular-webfont.ttf", 80)
-    iconFeelslikeFont = ImageFont.truetype("/usr/share/fonts/weathericons-regular-webfont.ttf", 50)
+    iconFont = ImageFont.truetype(project_root + "fonts/weathericons-regular-webfont.ttf", 160)
+    iconForecastFont = ImageFont.truetype(project_root + "fonts/weathericons-regular-webfont.ttf", 80)
+    iconFeelslikeFont = ImageFont.truetype(project_root + "fonts/weathericons-regular-webfont.ttf", 50)
+
+    # one time message
+    if hasattr( wi, "weatherInfo") == False:
+        draw.text((width / 2, height / 2), wi.one_time_message, (255,0,0), anchor="mm", font=smallFont )
+        return
+    draw.text((width - 10, 2), wi.one_time_message, (0,0,0), anchor="ra", font=textFont12 )
     
     temp_cur = wi.weatherInfo[u'current'][u'temp']
     temp_cur_feels = wi.weatherInfo[u'current'][u'feels_like']
@@ -139,6 +164,7 @@ def drawWeather(wi, cv):
     dateString = time.strftime("%B %-d", time.localtime(epoch))
     weekDayString = time.strftime("%a", time.localtime(epoch))
     weekDayNumber = time.strftime("%w", time.localtime(epoch))
+
 
     # date 
     draw.text((15 , 5), dateString, (0,0,0),font =dateFont)
@@ -168,7 +194,7 @@ def drawWeather(wi, cv):
     offsetY = 210
     
     # When alerts are in effect, show it to forecast area.
-    if u'alerts' in wi.weatherInfo:
+    if wi.show_warn == '1' and u'alerts' in wi.weatherInfo:
         alertInEffectString = time.strftime('%B %-d, %H:%m %p', time.localtime(wi.weatherInfo[u'alerts'][0][u'start']))
         #+ " - " + time.strftime('%B %-d, %-I %p', time.localtime(wi.weatherInfo[u'alerts'][0][u'end']))
         # + " from " + str(wi.weatherInfo[u'alerts'][0][u'sender_name'])
@@ -181,7 +207,7 @@ def drawWeather(wi, cv):
         #print(desc)
         #desc = re.sub(r"([A-Za-z]*\.)", "\g<1>\n", desc)
         #desc = re.sub(r"([A-Za-z]*\.)", "\g<1>\n", desc)
-        desc = re.sub(r'((?=.{80})(.{0,79}([\.[ ]|[ ]))|.{0,79})', "\g<1>\n", desc)
+        desc = re.sub(r'((?=.{90})(.{0,89}([\.[ ]|[ ]))|.{0,89})', "\g<1>\n", desc)
 
         desc = desc.replace("\n\n", '')
 #        desc = re.sub(r"^\n", "HAHAHA", desc) # eliminate blank lines
@@ -212,22 +238,26 @@ def drawWeather(wi, cv):
     
     
     #draw.rectangle(((0, 405), (width, height)), fill=(230, 230, 230), outline=None, width=1)
+    forecastIntervalHours = int(wi.forecast_interval)
     forecastRange = 4
     for fi in range(forecastRange):
         finfo = forecastInfo()
-        finfo.time_dt  = wi.weatherInfo[u'hourly'][fi][u'dt']
+        finfo.time_dt  = wi.weatherInfo[u'hourly'][fi * forecastIntervalHours + forecastIntervalHours][u'dt']
         finfo.time     = time.strftime('%-I %p', time.localtime(finfo.time_dt))
+        finfo.timeIn12h = time.strftime('clock%-I', time.localtime(finfo.time_dt))
         #finfo.ampm     = time.strftime('%p', time.localtime(finfo.time_dt))
         #finfo.time     = time.strftime('%-I', time.localtime(finfo.time_dt))
         finfo.timePfx  = time.strftime('%p', time.localtime(finfo.time_dt))
-        finfo.temp     = wi.weatherInfo[u'hourly'][fi][u'temp']
-        finfo.humidity = wi.weatherInfo[u'hourly'][fi][u'humidity']
-        finfo.pressure = wi.weatherInfo[u'hourly'][fi][u'pressure']
-        finfo.icon     = wi.weatherInfo[u'hourly'][fi][u'weather'][0][u'icon']
-        finfo.description = wi.weatherInfo[u'hourly'][fi][u'weather'][0][u'description'] # show the first 
+        finfo.temp     = wi.weatherInfo[u'hourly'][fi * forecastIntervalHours + forecastIntervalHours][u'temp']
+        finfo.humidity = wi.weatherInfo[u'hourly'][fi * forecastIntervalHours + forecastIntervalHours][u'humidity']
+        finfo.pressure = wi.weatherInfo[u'hourly'][fi * forecastIntervalHours + forecastIntervalHours][u'pressure']
+        finfo.icon     = wi.weatherInfo[u'hourly'][fi * forecastIntervalHours + forecastIntervalHours][u'weather'][0][u'icon']
+        finfo.description = wi.weatherInfo[u'hourly'][fi * forecastIntervalHours + forecastIntervalHours][u'weather'][0][u'description'] # show the first 
 
         columnWidth = width / forecastRange
         textColor = (50,50,50)
+        # Clock icon for the time.(Not so nice.)
+        #draw.text((20 + (fi * columnWidth),  offsetY + 90), iconMap[finfo.timeIn12h], textColor, anchor="ma",font =ImageFont.truetype(project_root + "fonts/weathericons-regular-webfont.ttf", 35))
         draw.text((30 + (fi * columnWidth), offsetY + 220), finfo.time,textColor,anchor="la", font =smallFont)
         draw.text((120 + (fi * columnWidth), offsetY + 220), ("%2.1f" % finfo.temp), textColor, anchor="ra", font=smallFont )
         
@@ -235,15 +265,17 @@ def drawWeather(wi, cv):
         draw.text((70 + (fi * columnWidth), offsetY + 90), iconMap[finfo.icon], colorMap[finfo.icon], anchor="ma",font =iconForecastFont)
 
 
+def update():
+    wi = weatherInfomation()
 
-wi = weatherInfomation()
-wi.loadWeatherData()
+    cv = Image.new("RGB", canvasSize, (255, 255, 255))
+    #cv = cv.rotate(90, expand=True)
+    drawWeather(wi, cv)
+    cv.save("test.png")
+    #cv = cv.rotate(-90, expand=True)
+    inky = Inky()
+    inky.set_image(cv, saturation=saturation)
+    #inky.show()
 
-cv = Image.new("RGB", canvasSize, (255, 255, 255))
-#cv = cv.rotate(90, expand=True)
-drawWeather(wi, cv)
-cv.save("test.png")
-#cv = cv.rotate(-90, expand=True)
-inky = Inky()
-inky.set_image(cv, saturation=saturation)
-inky.show()
+if __name__ == "__main__":
+    update()

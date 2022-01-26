@@ -5,3 +5,9 @@
 LAT=43.6655269,
 LON=-79.4065522
 API_KEY=COPY_AND_PASTE_YOUR_API_KEY_HERE
+
+# 1:Show warning message 0:Not show
+SHOW_WARN=0
+
+# Forecast interval(Hours) MIN:1
+FORECAST_INTERVAL=1
