@@ -258,9 +258,10 @@ def drawWeather(wi, cv):
             pressureArray.append(finfo.pressure)
         fig = plt.figure()
 
+
         fig.set_figheight(1)
         fig.set_figwidth(8.4)
-        plt.plot(xarray, pressureArray, linewidth=3, color=(0,1,0)) # RGB in 0~1.0
+        plt.plot(xarray, pressureArray, linewidth=3, color=(1,0,0)) # RGB in 0~1.0
         #plt.plot(xarray, pressureArray)
         #annot_max(np.array(xarray),np.array(tempArray))
         #annot_max(np.array(xarray),np.array(pressureArray))
@@ -287,7 +288,7 @@ def drawWeather(wi, cv):
         cv.paste(tempGraphImage, (-35, 300), tempGraphImage)
 
         # draw label
-        draw.rectangle((5, 425, 20, 441), fill=(0,255,0) )
+        draw.rectangle((5, 425, 20, 441), fill=(255,0,0))
         draw.text((15 + offsetX, 423), "Air pressure", (0,0,0),font =smallFont)
         return
     
