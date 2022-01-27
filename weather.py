@@ -105,7 +105,7 @@ class weatherInfomation(object):
             self.config.read_file(open(project_root + '/config.txt'))
             self.lat = self.config.get('openweathermap', 'LAT', raw=False)
             self.lon = self.config.get('openweathermap', 'LON', raw=False)
-            self.show_warn = self.config.get('openweathermap', 'SHOW_WARN', raw=False)
+            self.mode = self.config.get('openweathermap', 'mode', raw=False)
             self.forecast_interval = self.config.get('openweathermap', 'FORECAST_INTERVAL', raw=False)
             self.api_key = self.config.get('openweathermap', 'API_KEY', raw=False)
             # API document at https://openweathermap.org/api/one-call-api
@@ -194,7 +194,7 @@ def drawWeather(wi, cv):
     offsetY = 210
     
     # When alerts are in effect, show it to forecast area.
-    if wi.show_warn == '1' and u'alerts' in wi.weatherInfo:
+    if wi.mode == '1' and u'alerts' in wi.weatherInfo:
         alertInEffectString = time.strftime('%B %-d, %H:%m %p', time.localtime(wi.weatherInfo[u'alerts'][0][u'start']))
         #+ " - " + time.strftime('%B %-d, %-I %p', time.localtime(wi.weatherInfo[u'alerts'][0][u'end']))
         # + " from " + str(wi.weatherInfo[u'alerts'][0][u'sender_name'])
@@ -236,6 +236,60 @@ def drawWeather(wi, cv):
     pressureTextSize = draw.textsize("%d" % pressure, font =feelslikeFont)
     draw.text((feelslikeTextSize[0] + pressureTextSize[0] + 95 + offsetX, 224 + 40), "hPa", (0,0,0),font=textBoldFont)
     
+    # Graph mode
+    if wi.mode == '2':
+        import matplotlib.pyplot as plt
+        from matplotlib import font_manager as fm, rcParams
+        import numpy as np
+        forecastRange = 47
+        xarray = []
+        tempArray = []
+        pressureArray = []
+        for fi in range(forecastRange):
+            finfo = forecastInfo()
+            finfo.time_dt  = wi.weatherInfo[u'hourly'][fi][u'dt']
+            finfo.time     = time.strftime('%-I %p', time.localtime(finfo.time_dt))
+            finfo.temp     = wi.weatherInfo[u'hourly'][fi][u'temp']
+            finfo.humidity = wi.weatherInfo[u'hourly'][fi][u'humidity']
+            finfo.pressure = wi.weatherInfo[u'hourly'][fi][u'pressure']
+            finfo.icon     = wi.weatherInfo[u'hourly'][fi][u'weather'][0][u'icon']
+            xarray.append(finfo.time_dt)
+            tempArray.append(finfo.temp)
+            pressureArray.append(finfo.pressure)
+        fig = plt.figure()
+
+        fig.set_figheight(1)
+        fig.set_figwidth(8.4)
+        plt.plot(xarray, pressureArray, linewidth=3, color=(0,1,0)) # RGB in 0~1.0
+        #plt.plot(xarray, pressureArray)
+        #annot_max(np.array(xarray),np.array(tempArray))
+        #annot_max(np.array(xarray),np.array(pressureArray))
+        plt.axis('off')
+        plt.savefig('pressure.png', bbox_inches='tight', transparent=True)
+        tempGraphImage = Image.open("pressure.png")
+        cv.paste(tempGraphImage, (-35, 330), tempGraphImage)
+
+
+        fig = plt.figure()
+        fig.set_figheight(1)
+        fig.set_figwidth(8.4)
+        plt.plot(xarray, tempArray, linewidth=3)
+
+        for idx in range(1, forecastRange):
+            h = time.strftime('%-I', time.localtime(xarray[idx]))
+            if h == '0' or h == '12':
+                plt.axvline(x=xarray[idx], color='black', linestyle=':')
+                plt.text(xarray[idx-1], 0, time.strftime('%p', time.localtime(xarray[idx])))
+
+        plt.axis('off')
+        plt.savefig('temp.png', bbox_inches='tight',  transparent=True)
+        tempGraphImage = Image.open("temp.png")
+        cv.paste(tempGraphImage, (-35, 300), tempGraphImage)
+
+        # draw label
+        draw.rectangle((5, 425, 20, 441), fill=(0,255,0) )
+        draw.text((15 + offsetX, 423), "Air pressure", (0,0,0),font =smallFont)
+        return
     
     #draw.rectangle(((0, 405), (width, height)), fill=(230, 230, 230), outline=None, width=1)
     forecastIntervalHours = int(wi.forecast_interval)
@@ -264,6 +318,21 @@ def drawWeather(wi, cv):
         draw.text(((columnWidth / 2) + (fi * columnWidth),  offsetY + 200), finfo.description, textColor,anchor="ma", font =smallFont)
         draw.text((70 + (fi * columnWidth), offsetY + 90), iconMap[finfo.icon], colorMap[finfo.icon], anchor="ma",font =iconForecastFont)
 
+def annot_max(x,y, ax=None):
+    xmax = x[np.argmax(y)]
+    ymax = y.max()
+    maxTime = time.strftime('%b %-d,%-I%p', time.localtime(xmax))
+    text= maxTime + " {:.1f}C".format(ymax)
+    if not ax:
+        ax=plt.gca()
+    bbox_props = dict(boxstyle="square,pad=0.3", fc="w", ec="k", lw=0.72)
+    arrowprops=dict(arrowstyle="->",connectionstyle="angle,angleA=0,angleB=60")
+    kw = dict(xycoords='data',textcoords="axes fraction",
+              arrowprops=arrowprops, bbox=bbox_props, ha="right", va="top")
+
+    fpath = "/home/pi/weather-impression/fonts/Roboto-Black.ttf"
+    prop = fm.FontProperties(fname=fpath)
+    ax.annotate(text, xy=(xmax, ymax), xytext=(0.93,1.56), fontproperties=prop, **kw)
 
 def update():
     wi = weatherInfomation()

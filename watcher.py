@@ -7,14 +7,8 @@ import os
 
 # config file should be the same folder.
 project_root = os.getcwd()
-configFilePath = project_root + 'config.txt'
+configFilePath = project_root + '/config.txt'
 
-print("""buttons.py - Detect which button has been pressed
-This example should demonstrate how to:
- 1. set up RPi.GPIO to read buttons,
- 2. determine which button has been pressed
-Press Ctrl+C to exit!
-""")
 
 # Gpio pins for each button (from top to bottom)
 BUTTONS = [5, 6, 16, 24]
@@ -33,26 +27,35 @@ GPIO.setup(BUTTONS, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 # "handle_button" will be called every time a button is pressed
 # It receives one argument: the associated input pin.
 def handle_button(pin):
-    label = LABELS[BUTTONS.index(pin)]
-    print("Button press detected on pin: {} label: {}".format(pin, label))
+
+    config = configparser.ConfigParser()
+    config.read_file(open(configFilePath))
 
     if pin == 5:
-        config = configparser.ConfigParser()
-        config.read_file(open(configFilePath))
-        show_warn = config.get('openweathermap', 'SHOW_WARN', raw=False)
-        if show_warn == '1':
-            config.set("openweathermap", "SHOW_WARN", "0")
-            config.set("openweathermap", "one_time_message", "WARNING OFF")
+        mode = config.get('openweathermap', 'mode', raw=False)
+        if mode == '1': # already in show warning mode, this set back to default.
+            config.set("openweathermap", "mode", "0")
+            config.set("openweathermap", "one_time_message", "MODE:Forecast")
         else:
-            config.set("openweathermap", "SHOW_WARN", "1")
-            config.set("openweathermap", "one_time_message", "WARNING ON")
+            config.set("openweathermap", "mode", "1")
+            config.set("openweathermap", "one_time_message", "MODE:Alert message")
         with open(configFilePath, 'w') as configfile:
             config.write(configfile)
 
-        # refresh the screen
-        import weather
-        weather.update()
+    if pin == 6:
+        mode = config.get('openweathermap', 'mode', raw=False)
+        if mode == '2': # already in graph mode, this set back to default.
+            config.set("openweathermap", "one_time_message", "MODE:Forecast")
+            config.set("openweathermap", "mode", "0")
+        else:
+            config.set("openweathermap", "mode", "2")
+            config.set("openweathermap", "one_time_message", "MODE:Graph")
+        with open(configFilePath, 'w') as configfile:
+            config.write(configfile)
 
+    # refresh the screen
+    import weather
+    weather.update()
 
         
 
