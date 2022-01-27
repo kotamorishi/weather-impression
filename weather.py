@@ -226,7 +226,7 @@ def drawWeather(wi, cv):
         return
     # feels like
     draw.text((5 + offsetX , 175 + 40), "Feels like", (0,0,0),font =textFont)
-    draw.text((10 + offsetX, 200 + 40), "%2.0f" % temp_cur_feels, (0,0,0),font =feelslikeFont)
+    draw.text((10 + offsetX, 200 + 40), "%2.0f" % temp_cur_feels,tempColor,font =feelslikeFont)
     feelslikeTextSize = draw.textsize("%2.0f" % temp_cur_feels, font =feelslikeFont)
     draw.text((feelslikeTextSize[0] + 20 + offsetX, 200 + 40), iconMap['celsius'], tempColor, anchor="la", font =iconFeelslikeFont)
 
