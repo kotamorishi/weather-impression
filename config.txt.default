@@ -1,13 +1,17 @@
 [openweathermap]
 # set latitude and longitude for your weather info.
 # Tokyo : 35.6754095, 139.7259871
-# Toronto : 43.6655269,-79.4065522
-LAT=43.6655269,
-LON=-79.4065522
+# Toronto : 43.6532,-79.3832
+LAT=43.6532,
+LON=-79.3832
+
+# Your openweathermap API key
 API_KEY=COPY_AND_PASTE_YOUR_API_KEY_HERE
 
-# 1:Show warning message 0:Not show
-SHOW_WARN=0
+# 0:default
+# 1:Show warning message, when the warning is in effect
+# 2:Graph(temp and air pressure)
+mode=0
 
 # Forecast interval(Hours) MIN:1
 FORECAST_INTERVAL=1
