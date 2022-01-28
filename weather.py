@@ -20,9 +20,6 @@ canvasSize = (600, 448)
 # font file path(Adjust or change whatever you want)
 os.chdir('/home/pi/weather-impression')
 project_root = os.getcwd()
-defaultFont = project_root + "/fonts/Roboto-Black.ttf"
-lightFont = project_root + "/fonts/Roboto-Light.ttf"
-thinFont = project_root + "/fonts/Roboto-Thin.ttf"
 
 dayOfWeekColor = {
     '0':(0, 0, 0),
@@ -32,7 +29,6 @@ dayOfWeekColor = {
     '4':(255, 0, 0),
     '5':(255, 255, 0),
     '6':(255, 140, 0),
-
 }
 
 colorMap = {
