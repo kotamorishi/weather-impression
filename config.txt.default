@@ -8,10 +8,10 @@ LON=-79.3832
 # Your openweathermap API key
 API_KEY=COPY_AND_PASTE_YOUR_API_KEY_HERE
 
-# 0:default
-# 1:Show warning message, when the warning is in effect
+# 0:default - 4 forecast at the bottom.
+# 1:Alert - When the warning is in effect, show alert message. 
 # 2:Graph(temp and air pressure)
 mode=0
 
-# Forecast interval(Hours) MIN:1
+# Forecast interval(Hours) set 1 to 12. API can retrive 48 hours forecast.
 FORECAST_INTERVAL=1

@@ -9,7 +9,7 @@ https://shop.pimoroni.com/products/inky-impression-5-7
 Library for Inky Impression.
 https://github.com/pimoroni/inky
 
-If you wish to use graph drawing mode, install numpy and matplotlib
+For graph drawing, you need to install numpy and matplotlib.
 ```bash
 pip3 install -U numpy
 pip3 install -U matplotlib
