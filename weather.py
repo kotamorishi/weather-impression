@@ -8,6 +8,8 @@ import calendar
 from datetime import date
 from datetime import datetime
 import re
+from enum import Enum
+
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from inky.inky_uc8159 import Inky, BLACK, WHITE, GREEN, RED, YELLOW, ORANGE, BLUE
@@ -16,6 +18,7 @@ saturation = 0.5
 canvasSize = (600, 448)
 
 # font file path(Adjust or change whatever you want)
+os.chdir('/home/pi/weather-impression')
 project_root = os.getcwd()
 defaultFont = project_root + "/fonts/Roboto-Black.ttf"
 lightFont = project_root + "/fonts/Roboto-Light.ttf"
@@ -130,29 +133,27 @@ class weatherInfomation(object):
         import requests
         self.weatherInfo = requests.get(self.forecast_api_uri).json()
 
+
+class fonts(Enum):
+    thin = project_root + "/fonts/Roboto-Thin.ttf"
+    light =  project_root + "/fonts/Roboto-Light.ttf"
+    normal = project_root + "/fonts/Roboto-Black.ttf"
+    icon = project_root + "fonts/weathericons-regular-webfont.ttf"
+
+def getFont(type, fontsize=12):
+    return ImageFont.truetype(type.value, fontsize)
+
+
 # draw current weather and forecast into canvas
 def drawWeather(wi, cv):
     draw = ImageDraw.Draw(cv)
     width, height = cv.size
-    
-    dateFont = ImageFont.truetype(defaultFont, 64)
-    textFont = ImageFont.truetype(lightFont, 24)
-    textBoldFont = ImageFont.truetype(defaultFont, 22)
-    tempurtureFont = ImageFont.truetype(defaultFont, 120)
-    feelslikeFont = ImageFont.truetype(defaultFont, 50)
-    smallFont = ImageFont.truetype(defaultFont, 16)
-    textFont12 = ImageFont.truetype(defaultFont, 12)
-    lightFont14 = ImageFont.truetype(lightFont, 14)
-
-    iconFont = ImageFont.truetype(project_root + "fonts/weathericons-regular-webfont.ttf", 160)
-    iconForecastFont = ImageFont.truetype(project_root + "fonts/weathericons-regular-webfont.ttf", 80)
-    iconFeelslikeFont = ImageFont.truetype(project_root + "fonts/weathericons-regular-webfont.ttf", 50)
 
     # one time message
     if hasattr( wi, "weatherInfo") == False:
-        draw.text((width / 2, height / 2), wi.one_time_message, (255,0,0), anchor="mm", font=smallFont )
+        draw.text((width / 2, height / 2), wi.one_time_message, (255,0,0), anchor="mm", font=getFont(fonts.normal, fontsize=22) )
         return
-    draw.text((width - 10, 2), wi.one_time_message, (0,0,0), anchor="ra", font=textFont12 )
+    draw.text((width - 10, 2), wi.one_time_message, (0,0,0), anchor="ra", font=getFont(fonts.normal, fontsize=12))
     
     temp_cur = wi.weatherInfo[u'current'][u'temp']
     temp_cur_feels = wi.weatherInfo[u'current'][u'feels_like']
@@ -167,8 +168,8 @@ def drawWeather(wi, cv):
 
 
     # date 
-    draw.text((15 , 5), dateString, (0,0,0),font =dateFont)
-    draw.text((width - 8 , 5), weekDayString, (0,0,0), anchor="ra", font =dateFont)
+    draw.text((15 , 5), dateString, (0,0,0),font=getFont(fonts.normal, fontsize=64))
+    draw.text((width - 8 , 5), weekDayString, (0,0,0), anchor="ra", font =getFont(fonts.normal, fontsize=64))
 
     offsetX = 10
     offsetY = 40
@@ -179,17 +180,17 @@ def drawWeather(wi, cv):
     if temp_cur > 28:
         tempColor = (255,0,0)
     # draw date string
-    draw.text((5 + offsetX , 35 + offsetY), "Temperature", tempColor,font =textFont)
-    draw.text((0 + offsetX, 50 + offsetY), "%2.0f" % temp_cur, tempColor,font =tempurtureFont)
-    temperatureTextSize = draw.textsize("%2.0f" % temp_cur, font =tempurtureFont)
-    draw.text((temperatureTextSize[0] + 10 + offsetX, 85 + offsetY), iconMap['celsius'], tempColor, anchor="la", font =iconForecastFont)
+    draw.text((5 + offsetX , 35 + offsetY), "Temperature", tempColor,font =getFont(fonts.light,fontsize=24))
+    draw.text((0 + offsetX, 50 + offsetY), "%2.0f" % temp_cur, tempColor,font =getFont(fonts.normal, fontsize=120))
+    temperatureTextSize = draw.textsize("%2.0f" % temp_cur, font =getFont(fonts.normal, fontsize=120))
+    draw.text((temperatureTextSize[0] + 10 + offsetX, 85 + offsetY), iconMap['celsius'], tempColor, anchor="la", font =getFont(fonts.icon, fontsize=80))
     # humidity
-    # draw.text((width - 8, 270 + offsetY), str(humidity) + "%", (0,0,0), anchor="rs",font =textFont)
+    # draw.text((width - 8, 270 + offsetY), str(humidity) + "%", (0,0,0), anchor="rs",font =getFont(fonts.light,fontsize=24))
 
     # draw current weather icon
-    draw.text((440 + offsetX, 40 + offsetY), iconMap[icon], colorMap[icon], anchor="ma",font=iconFont)
+    draw.text((440 + offsetX, 40 + offsetY), iconMap[icon], colorMap[icon], anchor="ma",font=getFont(fonts.icon, fontsize=160))
 
-    draw.text((width - 8, 35 + offsetY), description, (0,0,0), anchor="ra", font =textFont)
+    draw.text((width - 8, 35 + offsetY), description, (0,0,0), anchor="ra", font =getFont(fonts.light,fontsize=24))
 
     offsetY = 210
     
@@ -219,22 +220,22 @@ def drawWeather(wi, cv):
 
         descFont = ImageFont.truetype(defaultFont, 14)
 
-        draw.text((5 + offsetX , 215), wi.weatherInfo[u'alerts'][0][u'event'].capitalize() , (255,0,0),anchor="la", font =textFont)
-        draw.text((5 + offsetX , 240), alertInEffectString + "/" + wi.weatherInfo[u'alerts'][0][u'sender_name'] , (0,0,0), font=textFont12)
+        draw.text((5 + offsetX , 215), wi.weatherInfo[u'alerts'][0][u'event'].capitalize() , (255,0,0),anchor="la", font =getFont(fonts.light,fontsize=24))
+        draw.text((5 + offsetX , 240), alertInEffectString + "/" + wi.weatherInfo[u'alerts'][0][u'sender_name'] , (0,0,0), font=getFont(fonts.normal, fontsize=12))
 
         draw.text((5 + offsetX, 270), desc, (255,0,0),anchor="la", font =descFont)
         return
     # feels like
-    draw.text((5 + offsetX , 175 + 40), "Feels like", (0,0,0),font =textFont)
-    draw.text((10 + offsetX, 200 + 40), "%2.0f" % temp_cur_feels,tempColor,font =feelslikeFont)
-    feelslikeTextSize = draw.textsize("%2.0f" % temp_cur_feels, font =feelslikeFont)
-    draw.text((feelslikeTextSize[0] + 20 + offsetX, 200 + 40), iconMap['celsius'], tempColor, anchor="la", font =iconFeelslikeFont)
+    draw.text((5 + offsetX , 175 + 40), "Feels like", (0,0,0),font =getFont(fonts.light,fontsize=24))
+    draw.text((10 + offsetX, 200 + 40), "%2.0f" % temp_cur_feels,tempColor,font =getFont(fonts.normal, fontsize=50))
+    feelslikeTextSize = draw.textsize("%2.0f" % temp_cur_feels, font =getFont(fonts.normal, fontsize=50))
+    draw.text((feelslikeTextSize[0] + 20 + offsetX, 200 + 40), iconMap['celsius'], tempColor, anchor="la", font=getFont(fonts.icon,fontsize=50))
 
     # Pressure
-    draw.text((feelslikeTextSize[0] + 85 + offsetX , 175 + 40), "Pressure", (0,0,0),font =textFont)
-    draw.text((feelslikeTextSize[0] + 90 + offsetX, 200 + 40), "%d" % pressure, (0,0,0),font =feelslikeFont)
-    pressureTextSize = draw.textsize("%d" % pressure, font =feelslikeFont)
-    draw.text((feelslikeTextSize[0] + pressureTextSize[0] + 95 + offsetX, 224 + 40), "hPa", (0,0,0),font=textBoldFont)
+    draw.text((feelslikeTextSize[0] + 85 + offsetX , 175 + 40), "Pressure", (0,0,0),font =getFont(fonts.light,fontsize=24))
+    draw.text((feelslikeTextSize[0] + 90 + offsetX, 200 + 40), "%d" % pressure, (0,0,0),font =getFont(fonts.normal, fontsize=50))
+    pressureTextSize = draw.textsize("%d" % pressure, font =getFont(fonts.normal, fontsize=50))
+    draw.text((feelslikeTextSize[0] + pressureTextSize[0] + 95 + offsetX, 224 + 40), "hPa", (0,0,0),font=getFont(fonts.normal, fontsize=22))
     
     # Graph mode
     if wi.mode == '2':
@@ -244,6 +245,7 @@ def drawWeather(wi, cv):
         forecastRange = 47
         xarray = []
         tempArray = []
+        feelsArray = []
         pressureArray = []
         for fi in range(forecastRange):
             finfo = forecastInfo()
@@ -255,10 +257,9 @@ def drawWeather(wi, cv):
             finfo.icon     = wi.weatherInfo[u'hourly'][fi][u'weather'][0][u'icon']
             xarray.append(finfo.time_dt)
             tempArray.append(finfo.temp)
+            feelsArray.append(finfo.temp)
             pressureArray.append(finfo.pressure)
         fig = plt.figure()
-
-
         fig.set_figheight(1)
         fig.set_figwidth(8.4)
         plt.plot(xarray, pressureArray, linewidth=3, color=(1,0,0)) # RGB in 0~1.0
@@ -269,6 +270,19 @@ def drawWeather(wi, cv):
         plt.savefig('pressure.png', bbox_inches='tight', transparent=True)
         tempGraphImage = Image.open("pressure.png")
         cv.paste(tempGraphImage, (-35, 330), tempGraphImage)
+
+        fig = plt.figure()
+        fig.set_figheight(1)
+        fig.set_figwidth(8.4)
+        plt.plot(xarray, feelsArray, linewidth=3, color=(1,0,0.5)) # RGB in 0~1.0
+        #plt.plot(xarray, pressureArray)
+        #annot_max(np.array(xarray),np.array(tempArray))
+        #annot_max(np.array(xarray),np.array(pressureArray))
+        plt.axis('off')
+        plt.savefig('feels.png', bbox_inches='tight', transparent=True)
+        tempGraphImage = Image.open("feels.png")
+        #cv.paste(tempGraphImage, (-35, 330), tempGraphImage)
+
 
 
         fig = plt.figure()
@@ -288,8 +302,11 @@ def drawWeather(wi, cv):
         cv.paste(tempGraphImage, (-35, 300), tempGraphImage)
 
         # draw label
-        draw.rectangle((5, 425, 20, 441), fill=(255,0,0))
-        draw.text((15 + offsetX, 423), "Air pressure", (0,0,0),font =smallFont)
+        draw.rectangle((5, 430, 20, 446), fill=(255,0,0))
+        draw.text((15 + offsetX, 428), "Air pressure", (0,0,0),font =getFont(fonts.normal, fontsize=16))
+
+        #draw.rectangle((135, 430, 150, 446), fill=(0,0,0))
+        #draw.text((145 + offsetX, 428), "Air pressure", (0,0,0),font =getFont(fonts.normal, fontsize=22))
         return
     
     #draw.rectangle(((0, 405), (width, height)), fill=(230, 230, 230), outline=None, width=1)
@@ -304,6 +321,7 @@ def drawWeather(wi, cv):
         #finfo.time     = time.strftime('%-I', time.localtime(finfo.time_dt))
         finfo.timePfx  = time.strftime('%p', time.localtime(finfo.time_dt))
         finfo.temp     = wi.weatherInfo[u'hourly'][fi * forecastIntervalHours + forecastIntervalHours][u'temp']
+        finfo.feels_like = wi.weatherInfo[u'hourly'][fi * forecastIntervalHours + forecastIntervalHours][u'feels_like']
         finfo.humidity = wi.weatherInfo[u'hourly'][fi * forecastIntervalHours + forecastIntervalHours][u'humidity']
         finfo.pressure = wi.weatherInfo[u'hourly'][fi * forecastIntervalHours + forecastIntervalHours][u'pressure']
         finfo.icon     = wi.weatherInfo[u'hourly'][fi * forecastIntervalHours + forecastIntervalHours][u'weather'][0][u'icon']
@@ -313,11 +331,11 @@ def drawWeather(wi, cv):
         textColor = (50,50,50)
         # Clock icon for the time.(Not so nice.)
         #draw.text((20 + (fi * columnWidth),  offsetY + 90), iconMap[finfo.timeIn12h], textColor, anchor="ma",font =ImageFont.truetype(project_root + "fonts/weathericons-regular-webfont.ttf", 35))
-        draw.text((30 + (fi * columnWidth), offsetY + 220), finfo.time,textColor,anchor="la", font =smallFont)
-        draw.text((120 + (fi * columnWidth), offsetY + 220), ("%2.1f" % finfo.temp), textColor, anchor="ra", font=smallFont )
+        draw.text((30 + (fi * columnWidth), offsetY + 220), finfo.time,textColor,anchor="la", font =getFont(fonts.normal, fontsize=12))
+        draw.text((120 + (fi * columnWidth), offsetY + 220), ("%2.1f" % finfo.temp), textColor, anchor="ra", font=getFont(fonts.normal, fontsize=12) )
         
-        draw.text(((columnWidth / 2) + (fi * columnWidth),  offsetY + 200), finfo.description, textColor,anchor="ma", font =smallFont)
-        draw.text((70 + (fi * columnWidth), offsetY + 90), iconMap[finfo.icon], colorMap[finfo.icon], anchor="ma",font =iconForecastFont)
+        draw.text(((columnWidth / 2) + (fi * columnWidth),  offsetY + 200), finfo.description, textColor,anchor="ma", font =getFont(fonts.normal, fontsize=16))
+        draw.text((70 + (fi * columnWidth), offsetY + 90), iconMap[finfo.icon], colorMap[finfo.icon], anchor="ma",font =getFont(fonts.icon, fontsize=80))
 
 def annot_max(x,y, ax=None):
     xmax = x[np.argmax(y)]
@@ -341,11 +359,12 @@ def update():
     cv = Image.new("RGB", canvasSize, (255, 255, 255))
     #cv = cv.rotate(90, expand=True)
     drawWeather(wi, cv)
-    #cv.save("test.png")
+    cv.save("test.png")
     #cv = cv.rotate(-90, expand=True)
     inky = Inky()
     inky.set_image(cv, saturation=saturation)
-    inky.show()
+    #inky.show()
 
 if __name__ == "__main__":
     update()
+    
