@@ -6,6 +6,7 @@ import configparser
 import os
 
 # config file should be the same folder.
+os.chdir('/home/pi/weather-impression')
 project_root = os.getcwd()
 configFilePath = project_root + '/config.txt'
 
