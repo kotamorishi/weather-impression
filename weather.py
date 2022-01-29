@@ -229,18 +229,23 @@ def drawWeather(wi, cv):
         tempArray = []
         feelsArray = []
         pressureArray = []
-        for fi in range(forecastRange):
-            finfo = forecastInfo()
-            finfo.time_dt  = wi.weatherInfo[u'hourly'][fi][u'dt']
-            finfo.time     = time.strftime('%-I %p', time.localtime(finfo.time_dt))
-            finfo.temp     = wi.weatherInfo[u'hourly'][fi][u'temp']
-            finfo.humidity = wi.weatherInfo[u'hourly'][fi][u'humidity']
-            finfo.pressure = wi.weatherInfo[u'hourly'][fi][u'pressure']
-            finfo.icon     = wi.weatherInfo[u'hourly'][fi][u'weather'][0][u'icon']
-            xarray.append(finfo.time_dt)
-            tempArray.append(finfo.temp)
-            feelsArray.append(finfo.temp)
-            pressureArray.append(finfo.pressure)
+        try:
+            for fi in range(forecastRange):
+                finfo = forecastInfo()
+                finfo.time_dt  = wi.weatherInfo[u'hourly'][fi][u'dt']
+                finfo.time     = time.strftime('%-I %p', time.localtime(finfo.time_dt))
+                finfo.temp     = wi.weatherInfo[u'hourly'][fi][u'temp']
+                finfo.humidity = wi.weatherInfo[u'hourly'][fi][u'humidity']
+                finfo.pressure = wi.weatherInfo[u'hourly'][fi][u'pressure']
+                finfo.icon     = wi.weatherInfo[u'hourly'][fi][u'weather'][0][u'icon']
+                xarray.append(finfo.time_dt)
+                tempArray.append(finfo.temp)
+                feelsArray.append(finfo.temp)
+                pressureArray.append(finfo.pressure)
+        except IndexError:
+            # The weather forecast API is supposed to return 48 forecasts, but it may return fewer than 48.
+            print("API returns limited hourly forecast.")
+            pass
         
         fig = plt.figure()
         fig.set_figheight(1)
@@ -270,13 +275,12 @@ def drawWeather(wi, cv):
         fig.set_figwidth(8.4)
         plt.plot(xarray, tempArray, linewidth=3, color=(0,0,1))
 
-        for idx in range(1, forecastRange):
+        for idx in range(1, len(xarray)):
             h = time.strftime('%-I', time.localtime(xarray[idx]))
             if h == '0' or h == '12':
                 plt.axvline(x=xarray[idx], color='black', linestyle=':')
                 posY = np.array(tempArray).max() + 1
                 plt.text(xarray[idx-1], posY, time.strftime('%p', time.localtime(xarray[idx])))
-
         plt.axis('off')
         plt.savefig('temp.png', bbox_inches='tight',  transparent=True)
         tempGraphImage = Image.open("temp.png")

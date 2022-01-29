@@ -55,10 +55,13 @@ def handle_button(pin):
             config.write(configfile)
 
     # refresh the screen
-    import weather
-    weather.update()
+    try:
+        import weather
+        weather.update()
+    except:
+        print("Weather update failed.")
+        pass
 
-        
 
 
 # Loop through out buttons and attach the "handle_button" function to each
