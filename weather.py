@@ -12,7 +12,7 @@ from enum import Enum
 
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-from inky.inky_uc8159 import Inky, BLACK, WHITE, GREEN, RED, YELLOW, ORANGE, BLUE
+from inky.inky_uc8159 import Inky, BLACK, WHITE, GREEN, RED, YELLOW, ORANGE, BLUE, SATURATED_PALETTE
 
 saturation = 0.5
 canvasSize = (600, 448)
@@ -146,6 +146,15 @@ def getFontColor(temp):
         return (255,0,0)
     return (0,0,0)
 
+def getDisplayColor(color):
+    return tuple(SATURATED_PALETTE[color])
+
+def getGraphColor(color):
+    r = SATURATED_PALETTE[color][0] / 255
+    g = SATURATED_PALETTE[color][1] / 255
+    b = SATURATED_PALETTE[color][2] / 255
+    return (r,g,b)
+
 # draw current weather and forecast into canvas
 def drawWeather(wi, cv):
     draw = ImageDraw.Draw(cv)
@@ -225,6 +234,8 @@ def drawWeather(wi, cv):
         from matplotlib import font_manager as fm, rcParams
         import numpy as np
         forecastRange = 47
+        graph_height = 1.1
+        graph_width = 8.4
         xarray = []
         tempArray = []
         feelsArray = []
@@ -235,22 +246,24 @@ def drawWeather(wi, cv):
                 finfo.time_dt  = wi.weatherInfo[u'hourly'][fi][u'dt']
                 finfo.time     = time.strftime('%-I %p', time.localtime(finfo.time_dt))
                 finfo.temp     = wi.weatherInfo[u'hourly'][fi][u'temp']
+                finfo.feels_like     = wi.weatherInfo[u'hourly'][fi][u'feels_like']
                 finfo.humidity = wi.weatherInfo[u'hourly'][fi][u'humidity']
                 finfo.pressure = wi.weatherInfo[u'hourly'][fi][u'pressure']
                 finfo.icon     = wi.weatherInfo[u'hourly'][fi][u'weather'][0][u'icon']
                 xarray.append(finfo.time_dt)
                 tempArray.append(finfo.temp)
-                feelsArray.append(finfo.temp)
+                feelsArray.append(finfo.feels_like)
                 pressureArray.append(finfo.pressure)
         except IndexError:
             # The weather forecast API is supposed to return 48 forecasts, but it may return fewer than 48.
-            print("API returns limited hourly forecast.")
+            errorMessage = "Weather API returns limited hourly forecast(" + str(len(xarray)) + ")"
+            draw.text((width - 10, height - 2), errorMessage, getDisplayColor(ORANGE), anchor="ra", font=getFont(fonts.normal, fontsize=12))
             pass
         
         fig = plt.figure()
-        fig.set_figheight(1)
-        fig.set_figwidth(8.4)
-        plt.plot(xarray, pressureArray, linewidth=3, color=(1,0,0)) # RGB in 0~1.0
+        fig.set_figheight(graph_height)
+        fig.set_figwidth(graph_width)
+        plt.plot(xarray, pressureArray, linewidth=3, color=getGraphColor(RED)) # RGB in 0~1.0
         #plt.plot(xarray, pressureArray)
         #annot_max(np.array(xarray),np.array(tempArray))
         #annot_max(np.array(xarray),np.array(pressureArray))
@@ -260,20 +273,20 @@ def drawWeather(wi, cv):
         cv.paste(tempGraphImage, (-35, 330), tempGraphImage)
 
 
-        # fig = plt.figure()
-        # fig.set_figheight(1)
-        # fig.set_figwidth(8.4)
-        # plt.plot(xarray, feelsArray, linewidth=3, color=(1,0,0.5)) # RGB in 0~1.0
-        # plt.axis('off')
-        # plt.savefig('feels.png', bbox_inches='tight', transparent=True)
-        # tempGraphImage = Image.open("feels.png")
-        # cv.paste(tempGraphImage, (-35, 330), tempGraphImage)
+        fig = plt.figure()
+        fig.set_figheight(graph_height)
+        fig.set_figwidth(graph_width)
+        plt.plot(xarray, feelsArray, linewidth=1, color=getGraphColor(GREEN), linestyle=':') # RGB in 0~1.0
+        plt.axis('off')
+        plt.savefig('feels.png', bbox_inches='tight', transparent=True)
+        tempGraphImage = Image.open("feels.png")
+        cv.paste(tempGraphImage, (-35, 317), tempGraphImage)
 
 
         fig = plt.figure()
-        fig.set_figheight(1)
-        fig.set_figwidth(8.4)
-        plt.plot(xarray, tempArray, linewidth=3, color=(0,0,1))
+        fig.set_figheight(graph_height)
+        fig.set_figwidth(graph_width)
+        plt.plot(xarray, tempArray, linewidth=3, color=getGraphColor(BLUE))
 
         for idx in range(1, len(xarray)):
             h = time.strftime('%-I', time.localtime(xarray[idx]))
@@ -287,10 +300,10 @@ def drawWeather(wi, cv):
         cv.paste(tempGraphImage, (-35, 300), tempGraphImage)
 
         # draw label
-        draw.rectangle((5, 430, 20, 446), fill=(255,0,0))
+        draw.rectangle((5, 430, 20, 446), fill=getDisplayColor(RED))
         draw.text((15 + offsetX, 428), "Air pressure", (0,0,0),font =getFont(fonts.normal, fontsize=16))
 
-        draw.rectangle((135, 430, 150, 446), fill=(0,0,255))
+        draw.rectangle((135, 430, 150, 446), fill=getDisplayColor(BLUE))
         draw.text((145 + offsetX, 428), "Temp", (0,0,0),font =getFont(fonts.normal, fontsize=16))
         return
     
@@ -352,4 +365,3 @@ def update():
 
 if __name__ == "__main__":
     update()
-    
