@@ -50,6 +50,7 @@ add 2 lines at the end(adjust for your path)
 ```
 
 watcher.py handling button press and update config.txt(mode and one time message)
+I will change watcher.py to run it every one hour.
 
 # Fonts
 These fonts are already included in this project.
