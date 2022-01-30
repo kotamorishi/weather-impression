@@ -351,11 +351,11 @@ def update():
     cv = Image.new("RGB", canvasSize, (255, 255, 255))
     #cv = cv.rotate(90, expand=True)
     drawWeather(wi, cv)
-    cv.save("test.png")
+    #cv.save("test.png")
     #cv = cv.rotate(-90, expand=True)
     inky = Inky()
     inky.set_image(cv, saturation=saturation)
-    #inky.show()
+    inky.show()
 
 if __name__ == "__main__":
     update()
