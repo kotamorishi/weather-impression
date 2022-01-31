@@ -278,7 +278,7 @@ def drawWeather(wi, cv):
         fig = plt.figure()
         fig.set_figheight(graph_height)
         fig.set_figwidth(graph_width)
-        plt.plot(xarray, feelsArray, linewidth=3, color=getGraphColor(YELLOW), linestyle=':') # RGB in 0~1.0
+        plt.plot(xarray, feelsArray, linewidth=3, color=getGraphColor(GREEN), linestyle=':') # RGB in 0~1.0
         plt.axis('off')
         plt.plot(xarray, tempArray, linewidth=3, color=getGraphColor(BLUE))
 
@@ -299,6 +299,9 @@ def drawWeather(wi, cv):
 
         draw.rectangle((135, 430, 150, 446), fill=getDisplayColor(BLUE))
         draw.text((145 + offsetX, 428), "Temp", getDisplayColor(BLACK),font=getFont(fonts.normal, fontsize=16))
+
+        draw.rectangle((265, 430, 280, 446), fill=getDisplayColor(GREEN))
+        draw.text((275 + offsetX, 428), "Feels like", getDisplayColor(BLACK),font=getFont(fonts.normal, fontsize=16))
         return
     
 
