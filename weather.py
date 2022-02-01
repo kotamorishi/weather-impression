@@ -21,35 +21,25 @@ canvasSize = (600, 448)
 os.chdir('/home/pi/weather-impression')
 project_root = os.getcwd()
 
-dayOfWeekColor = {
-    '0':(0, 0, 0),
-    '1':(255, 255, 255),
-    '2':(0, 255, 0),
-    '3':(0, 0, 255),
-    '4':(255, 0, 0),
-    '5':(255, 255, 0),
-    '6':(255, 140, 0),
-}
-
 colorMap = {
-    '01d':(255,140,0), # clear sky
-    '01n':(255, 255, 0),
-    '02d':(0, 0, 0), # few clouds
-    '02n':(0, 0, 0),
-    '03d':(0, 0, 0), # scattered clouds
-    '03n':(0, 0, 0),
-    '04d':(0, 0, 0), # broken clouds
-    '04n':(0, 0, 0),
-    '09d':(0, 0, 0), # shower rain
-    '09n':(0, 0, 0),
-    '10d':(0,0,255), # rain
-    '10n':(0,0,255),
-    '11d':(255,0,0), # thunderstorm
-    '11n':(255,0,0),
-    '13d':(0,0,255), # snow
-    '13n':(0,0,255),
-    '50d':(0, 0, 0), # fog
-    '50n':(0, 0, 0),
+    '01d':ORANGE, # clear sky
+    '01n':YELLOW,
+    '02d':BLACK, # few clouds
+    '02n':BLACK,
+    '03d':BLACK, # scattered clouds
+    '03n':BLACK,
+    '04d':BLACK, # broken clouds
+    '04n':BLACK,
+    '09d':BLACK, # shower rain
+    '09n':BLACK,
+    '10d':BLUE,  # rain
+    '10n':BLUE, 
+    '11d':RED,   # thunderstorm
+    '11n':RED,
+    '13d':BLUE,  # snow
+    '13n':BLUE, 
+    '50d':BLACK, # fog
+    '50n':BLACK,
 }
 # icon name to weather icon mapping
 iconMap = {
@@ -111,7 +101,7 @@ class weatherInfomation(object):
             self.forecast_api_uri = 'https://api.openweathermap.org/data/2.5/onecall?&lat=' + self.lat + '&lon=' + self.lon +'&appid=' + self.api_key + '&exclude=daily&units=metric'
             self.loadWeatherData()
         except:
-            self.one_time_message = "Configuration file is not found or settings are wrong.\n\nplease check the file : " + project_root + "/config.txt"
+            self.one_time_message = "Configuration file is not found or settings are wrong.\nplease check the file : " + project_root + "/config.txt\n\nAlso check your internet connection."
             return
 
         # load one time messge and remove it from the file. one_time_message can be None.
@@ -164,7 +154,10 @@ def drawWeather(wi, cv):
 
     # one time message
     if hasattr( wi, "weatherInfo") == False:
-        draw.text((width / 2, height / 2), wi.one_time_message, getDisplayColor(RED), anchor="mm", font=getFont(fonts.normal, fontsize=22) )
+        draw.rectangle((0, 0, width, height), fill=getDisplayColor(ORANGE))
+        draw.text((20, 0), u"", getDisplayColor(BLACK), anchor="la", font =getFont(fonts.icon, fontsize=80))
+        draw.text((20, 130), "Weather information is not available at this time.", getDisplayColor(BLACK), anchor="lm", font=getFont(fonts.normal, fontsize=18) )
+        draw.text((width / 2, height / 2), wi.one_time_message, getDisplayColor(BLACK), anchor="mm", font=getFont(fonts.normal, fontsize=16) )
         return
     draw.text((width - 10, 2), wi.one_time_message, getDisplayColor(BLACK), anchor="ra", font=getFont(fonts.normal, fontsize=12))
     
@@ -195,7 +188,7 @@ def drawWeather(wi, cv):
     # draw.text((width - 8, 270 + offsetY), str(humidity) + "%", getDisplayColor(BLACK), anchor="rs",font =getFont(fonts.light,fontsize=24))
 
     # draw current weather icon
-    draw.text((440 + offsetX, 40 + offsetY), iconMap[icon], colorMap[icon], anchor="ma",font=getFont(fonts.icon, fontsize=160))
+    draw.text((440 + offsetX, 40 + offsetY), iconMap[icon], getDisplayColor(colorMap[icon]), anchor="ma",font=getFont(fonts.icon, fontsize=160))
 
     draw.text((width - 8, 35 + offsetY), description, getDisplayColor(BLACK), anchor="ra", font =getFont(fonts.light,fontsize=24))
 
@@ -330,7 +323,7 @@ def drawWeather(wi, cv):
         draw.text((120 + (fi * columnWidth), offsetY + 220), ("%2.1f" % finfo.temp), textColor, anchor="ra", font=getFont(fonts.normal, fontsize=12) )
         
         draw.text(((columnWidth / 2) + (fi * columnWidth),  offsetY + 200), finfo.description, textColor,anchor="ma", font =getFont(fonts.normal, fontsize=16))
-        draw.text((70 + (fi * columnWidth), offsetY + 90), iconMap[finfo.icon], colorMap[finfo.icon], anchor="ma",font =getFont(fonts.icon, fontsize=80))
+        draw.text((70 + (fi * columnWidth), offsetY + 90), iconMap[finfo.icon], getDisplayColor(colorMap[finfo.icon]), anchor="ma",font =getFont(fonts.icon, fontsize=80))
 
 def annot_max(x,y, ax=None):
     xmax = x[np.argmax(y)]
@@ -351,14 +344,14 @@ def annot_max(x,y, ax=None):
 def update():
     wi = weatherInfomation()
 
-    cv = Image.new("RGB", canvasSize, (255, 255, 255))
+    cv = Image.new("RGB", canvasSize, getDisplayColor(WHITE) )
     #cv = cv.rotate(90, expand=True)
     drawWeather(wi, cv)
-    #cv.save("test.png")
+    cv.save("test.png")
     #cv = cv.rotate(-90, expand=True)
     inky = Inky()
     inky.set_image(cv, saturation=saturation)
-    inky.show()
+    #inky.show()
 
 if __name__ == "__main__":
     update()
