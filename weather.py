@@ -155,8 +155,8 @@ def drawWeather(wi, cv):
     # one time message
     if hasattr( wi, "weatherInfo") == False:
         draw.rectangle((0, 0, width, height), fill=getDisplayColor(ORANGE))
-        draw.text((20, 0), u"", getDisplayColor(BLACK), anchor="la", font =getFont(fonts.icon, fontsize=80))
-        draw.text((20, 130), "Weather information is not available at this time.", getDisplayColor(BLACK), anchor="lm", font=getFont(fonts.normal, fontsize=18) )
+        draw.text((20, 70), u"", getDisplayColor(BLACK), anchor="lm", font =getFont(fonts.icon, fontsize=130))
+        draw.text((150, 80), "Weather information is not available at this time.", getDisplayColor(BLACK), anchor="lm", font=getFont(fonts.normal, fontsize=18) )
         draw.text((width / 2, height / 2), wi.one_time_message, getDisplayColor(BLACK), anchor="mm", font=getFont(fonts.normal, fontsize=16) )
         return
     draw.text((width - 10, 2), wi.one_time_message, getDisplayColor(BLACK), anchor="ra", font=getFont(fonts.normal, fontsize=12))
@@ -351,7 +351,7 @@ def update():
     #cv = cv.rotate(-90, expand=True)
     inky = Inky()
     inky.set_image(cv, saturation=saturation)
-    #inky.show()
+    inky.show()
 
 if __name__ == "__main__":
     update()
