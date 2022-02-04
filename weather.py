@@ -4,6 +4,7 @@ import os
 import sys
 import math
 import time
+import gpiod
 import calendar
 from datetime import date
 from datetime import datetime
@@ -168,6 +169,7 @@ def drawWeather(wi, cv):
     humidity = wi.weatherInfo[u'current'][u'humidity']
     pressure = wi.weatherInfo[u'current'][u'pressure']
     epoch = int(wi.weatherInfo[u'current'][u'dt'])
+    #snow = wi.weatherInfo[u'current'][u'snow']
     dateString = time.strftime("%B %-d", time.localtime(epoch))
     weekDayString = time.strftime("%a", time.localtime(epoch))
     weekDayNumber = time.strftime("%w", time.localtime(epoch))
@@ -245,6 +247,7 @@ def drawWeather(wi, cv):
                 finfo.humidity = wi.weatherInfo[u'hourly'][fi][u'humidity']
                 finfo.pressure = wi.weatherInfo[u'hourly'][fi][u'pressure']
                 finfo.icon     = wi.weatherInfo[u'hourly'][fi][u'weather'][0][u'icon']
+                # print(wi.weatherInfo[u'hourly'][fi][u'snow'][u'1h']) # mm  / you may get 8 hours maximum
                 xarray.append(finfo.time_dt)
                 tempArray.append(finfo.temp)
                 feelsArray.append(finfo.feels_like)
@@ -341,17 +344,36 @@ def annot_max(x,y, ax=None):
     prop = fm.FontProperties(fname=fpath)
     ax.annotate(text, xy=(xmax, ymax), xytext=(0.93,1.56), fontproperties=prop, **kw)
 
+def initGPIO():
+    chip = gpiod.chip(0) # 0 chip 
+    pin = 4
+    gpiod_pin = chip.get_line(pin)
+    config = gpiod.line_request()
+    config.consumer = "Blink"
+    config.request_type = gpiod.line_request.DIRECTION_OUTPUT
+    gpiod_pin.request(config)
+    return gpiod_pin
+
+def setUpdateStatus(gpiod_pin, busy):
+    if busy == True:
+        gpiod_pin.set_value(1)
+    else:
+        gpiod_pin.set_value(0)
+
 def update():
+    gpio_pin = initGPIO()
+    setUpdateStatus(gpio_pin, True)
     wi = weatherInfomation()
 
     cv = Image.new("RGB", canvasSize, getDisplayColor(WHITE) )
     #cv = cv.rotate(90, expand=True)
     drawWeather(wi, cv)
-    cv.save("test.png")
+    #cv.save("test.png")
     #cv = cv.rotate(-90, expand=True)
     inky = Inky()
     inky.set_image(cv, saturation=saturation)
     inky.show()
+    setUpdateStatus(gpio_pin, False)
 
 if __name__ == "__main__":
     update()

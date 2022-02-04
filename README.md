@@ -10,9 +10,11 @@ Library for Inky Impression.
 https://github.com/pimoroni/inky
 
 For graph drawing, you need to install numpy and matplotlib.
+Also for LED notification, gpiod is needed.
 ```bash
-pip3 install -U numpy
-pip3 install -U matplotlib
+sudo -H pip3 install numpy
+sudo -H pip3 install matplotlib
+sudo -H pip3 install gpiod
 ```
 # Weather information
 Get your API key.
