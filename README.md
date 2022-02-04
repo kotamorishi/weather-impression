@@ -1,5 +1,7 @@
 # This is just works - NO GOOD code at all.
-I will fix this up when I feel to do it.
+I will fix this up when I feel like to do it.
+
+![lib directory contents](/frame.jpg)
 
 # weather-impression
 Weather station for PIMORONI Inky Impression(5.7")
