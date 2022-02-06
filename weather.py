@@ -125,7 +125,7 @@ class fonts(Enum):
     thin = project_root + "/fonts/Roboto-Thin.ttf"
     light =  project_root + "/fonts/Roboto-Light.ttf"
     normal = project_root + "/fonts/Roboto-Black.ttf"
-    icon = project_root + "fonts/weathericons-regular-webfont.ttf"
+    icon = project_root + "/fonts/weathericons-regular-webfont.ttf"
 
 def getFont(type, fontsize=12):
     return ImageFont.truetype(type.value, fontsize)
