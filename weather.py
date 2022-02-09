@@ -141,6 +141,14 @@ def getFontColor(temp):
 def getDisplayColor(color):
     return tuple(color_palette[color])
 
+def getTempretureString(temp):
+    print(temp)
+    formattedString = "%3.0f" % temp
+    if formattedString == "-0":
+        return "0"
+    else:
+        return formattedString
+    
 # return color rgb in 0 ~ 1.0 scale
 def getGraphColor(color):
     r = color_palette[color][0] / 255
@@ -181,10 +189,10 @@ def drawWeather(wi, cv):
     offsetX = 10
     offsetY = 40
 
-    # draw date string
+    # draw temp string
     draw.text((5 + offsetX , 35 + offsetY), "Temperature", getDisplayColor(BLACK),font=getFont(fonts.light,fontsize=24))
-    draw.text((0 + offsetX, 50 + offsetY), "%2.0f" % temp_cur, getFontColor(temp_cur),font =getFont(fonts.normal, fontsize=120))
-    temperatureTextSize = draw.textsize("%2.0f" % temp_cur, font =getFont(fonts.normal, fontsize=120))
+    draw.text((0 + offsetX, 50 + offsetY), getTempretureString(temp_cur), getFontColor(temp_cur),font =getFont(fonts.normal, fontsize=120))
+    temperatureTextSize = draw.textsize(getTempretureString(temp_cur), font =getFont(fonts.normal, fontsize=120))
     draw.text((temperatureTextSize[0] + 10 + offsetX, 85 + offsetY), iconMap['celsius'], getFontColor(temp_cur), anchor="la", font =getFont(fonts.icon, fontsize=80))
     # humidity
     # draw.text((width - 8, 270 + offsetY), str(humidity) + "%", getDisplayColor(BLACK), anchor="rs",font =getFont(fonts.light,fontsize=24))
@@ -215,8 +223,8 @@ def drawWeather(wi, cv):
         return
     # feels like
     draw.text((5 + offsetX , 175 + 40), "Feels like", getDisplayColor(BLACK),font =getFont(fonts.light,fontsize=24))
-    draw.text((10 + offsetX, 200 + 40), "%2.0f" % temp_cur_feels,getFontColor(temp_cur_feels),font =getFont(fonts.normal, fontsize=50))
-    feelslikeTextSize = draw.textsize("%2.0f" % temp_cur_feels, font =getFont(fonts.normal, fontsize=50))
+    draw.text((10 + offsetX, 200 + 40), getTempretureString(temp_cur_feels),getFontColor(temp_cur_feels),font =getFont(fonts.normal, fontsize=50))
+    feelslikeTextSize = draw.textsize(getTempretureString(temp_cur_feels), font =getFont(fonts.normal, fontsize=50))
     draw.text((feelslikeTextSize[0] + 20 + offsetX, 200 + 40), iconMap['celsius'], getFontColor(temp_cur_feels), anchor="la", font=getFont(fonts.icon,fontsize=50))
 
     # Pressure
