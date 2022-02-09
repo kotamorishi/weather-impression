@@ -22,6 +22,8 @@ canvasSize = (600, 448)
 os.chdir('/home/pi/weather-impression')
 project_root = os.getcwd()
 
+unit_imperial = "imperial"
+
 colorMap = {
     '01d':ORANGE, # clear sky
     '01n':YELLOW,
@@ -77,7 +79,8 @@ iconMap = {
     'clock11':u'',
     'clock12':u'',
 
-    'celsius':u''
+    'celsius':u'',
+    'fahrenheit':u''
 }
 
 #empty structure
@@ -99,7 +102,14 @@ class weatherInfomation(object):
             self.forecast_interval = self.config.get('openweathermap', 'FORECAST_INTERVAL', raw=False)
             self.api_key = self.config.get('openweathermap', 'API_KEY', raw=False)
             # API document at https://openweathermap.org/api/one-call-api
-            self.forecast_api_uri = 'https://api.openweathermap.org/data/2.5/onecall?&lat=' + self.lat + '&lon=' + self.lon +'&appid=' + self.api_key + '&exclude=daily&units=metric'
+            self.unit = self.config.get('openweathermap', 'TEMP_UNIT', raw=False)
+            self.cold_temp = float(self.config.get('openweathermap', 'cold_temp', raw=False))
+            self.hot_temp = float(self.config.get('openweathermap', 'hot_temp', raw=False))
+            self.forecast_api_uri = 'https://api.openweathermap.org/data/2.5/onecall?&lat=' + self.lat + '&lon=' + self.lon +'&appid=' + self.api_key + '&exclude=daily'
+            if(self.unit == 'imperial'):
+                self.forecast_api_uri = self.forecast_api_uri + "&units=imperial"
+            else:
+                self.forecast_api_uri = self.forecast_api_uri + "&units=metric"
             self.loadWeatherData()
         except:
             self.one_time_message = "Configuration file is not found or settings are wrong.\nplease check the file : " + project_root + "/config.txt\n\nAlso check your internet connection."
@@ -130,20 +140,25 @@ class fonts(Enum):
 def getFont(type, fontsize=12):
     return ImageFont.truetype(type.value, fontsize)
 
-def getFontColor(temp):
-    if temp < -10:
+def getFontColor(temp, wi):
+    if temp < wi.cold_temp:
         return (0,0,255)
-    if temp > 28:
+    if temp > wi.hot_temp:
         return (255,0,0)
     return getDisplayColor(BLACK)
+
+def getUnitSign(unit):
+    if(unit == unit_imperial):
+        return iconMap['fahrenheit']
+    
+    return iconMap['celsius']
 
 # return rgb in 0 ~ 255
 def getDisplayColor(color):
     return tuple(color_palette[color])
 
 def getTempretureString(temp):
-    print(temp)
-    formattedString = "%3.0f" % temp
+    formattedString = "%0.0f" % temp
     if formattedString == "-0":
         return "0"
     else:
@@ -191,9 +206,9 @@ def drawWeather(wi, cv):
 
     # draw temp string
     draw.text((5 + offsetX , 35 + offsetY), "Temperature", getDisplayColor(BLACK),font=getFont(fonts.light,fontsize=24))
-    draw.text((0 + offsetX, 50 + offsetY), getTempretureString(temp_cur), getFontColor(temp_cur),font =getFont(fonts.normal, fontsize=120))
+    draw.text((0 + offsetX, 50 + offsetY), getTempretureString(temp_cur), getFontColor(temp_cur, wi),font =getFont(fonts.normal, fontsize=120))
     temperatureTextSize = draw.textsize(getTempretureString(temp_cur), font =getFont(fonts.normal, fontsize=120))
-    draw.text((temperatureTextSize[0] + 10 + offsetX, 85 + offsetY), iconMap['celsius'], getFontColor(temp_cur), anchor="la", font =getFont(fonts.icon, fontsize=80))
+    draw.text((temperatureTextSize[0] + 10 + offsetX, 85 + offsetY), getUnitSign(wi.unit), getFontColor(temp_cur, wi), anchor="la", font =getFont(fonts.icon, fontsize=80))
     # humidity
     # draw.text((width - 8, 270 + offsetY), str(humidity) + "%", getDisplayColor(BLACK), anchor="rs",font =getFont(fonts.light,fontsize=24))
 
@@ -223,9 +238,9 @@ def drawWeather(wi, cv):
         return
     # feels like
     draw.text((5 + offsetX , 175 + 40), "Feels like", getDisplayColor(BLACK),font =getFont(fonts.light,fontsize=24))
-    draw.text((10 + offsetX, 200 + 40), getTempretureString(temp_cur_feels),getFontColor(temp_cur_feels),font =getFont(fonts.normal, fontsize=50))
+    draw.text((10 + offsetX, 200 + 40), getTempretureString(temp_cur_feels),getFontColor(temp_cur_feels, wi),font =getFont(fonts.normal, fontsize=50))
     feelslikeTextSize = draw.textsize(getTempretureString(temp_cur_feels), font =getFont(fonts.normal, fontsize=50))
-    draw.text((feelslikeTextSize[0] + 20 + offsetX, 200 + 40), iconMap['celsius'], getFontColor(temp_cur_feels), anchor="la", font=getFont(fonts.icon,fontsize=50))
+    draw.text((feelslikeTextSize[0] + 20 + offsetX, 200 + 40), getUnitSign(wi.unit), getFontColor(temp_cur_feels, wi), anchor="la", font=getFont(fonts.icon,fontsize=50))
 
     # Pressure
     draw.text((feelslikeTextSize[0] + 85 + offsetX , 175 + 40), "Pressure", getDisplayColor(BLACK),font =getFont(fonts.light,fontsize=24))
