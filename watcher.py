@@ -68,7 +68,7 @@ def handle_button(pin):
 # We're watching the "FALLING" edge (transition from 3.3V to Ground) and
 # picking a generous bouncetime of 250ms to smooth out button presses.
 for pin in BUTTONS:
-    GPIO.add_event_detect(pin, GPIO.FALLING, handle_button, bouncetime=250)
+    GPIO.add_event_detect(pin, GPIO.FALLING, handle_button, bouncetime=10000)
 
 # Finally, since button handlers don't require a "while True" loop,
 # we pause the script to prevent it exiting immediately.
