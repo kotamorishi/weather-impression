@@ -5,7 +5,7 @@
 LAT=43.6532,
 LON=-79.3832
 
-# Your openweathermap API key
+# Your openweathermap API key, you can get it from https://openweathermap.org/
 API_KEY=COPY_AND_PASTE_YOUR_API_KEY_HERE
 
 # 0:default - 4 forecast at the bottom.
@@ -15,3 +15,12 @@ mode=0
 
 # Forecast interval(Hours) set 1 to 12. API can retrive 48 hours forecast.
 FORECAST_INTERVAL=1
+
+# tempture unit metric or imperial
+TEMP_UNIT=imperial
+
+# Font color for hot/cold tempture
+# blue
+cold_temp=41
+# red
+hot_temp=88
