@@ -32,6 +32,7 @@ def handle_button(pin):
     config = configparser.ConfigParser()
     config.read_file(open(configFilePath))
 
+    # Top button
     if pin == 5:
         mode = config.get('openweathermap', 'mode', raw=False)
         if mode == '1': # already in show warning mode, this set back to default.
@@ -43,6 +44,7 @@ def handle_button(pin):
         with open(configFilePath, 'w') as configfile:
             config.write(configfile)
 
+    # Second button
     if pin == 6:
         mode = config.get('openweathermap', 'mode', raw=False)
         if mode == '2': # already in graph mode, this set back to default.
@@ -51,6 +53,18 @@ def handle_button(pin):
         else:
             config.set("openweathermap", "mode", "2")
             config.set("openweathermap", "one_time_message", "MODE:Graph")
+        with open(configFilePath, 'w') as configfile:
+            config.write(configfile)
+
+    # 4th button
+    if pin == 24:
+        unit = config.get('openweathermap', 'TEMP_UNIT', raw=False)
+        if unit == 'imperial':
+            config.set("openweathermap", "one_time_message", "Unit:Metric")
+            config.set("openweathermap", "TEMP_UNIT", "metric")
+        else:
+            config.set("openweathermap", "one_time_message", "Unit:Imperial")
+            config.set("openweathermap", "TEMP_UNIT", "imperial")
         with open(configFilePath, 'w') as configfile:
             config.write(configfile)
 
@@ -68,7 +82,7 @@ def handle_button(pin):
 # We're watching the "FALLING" edge (transition from 3.3V to Ground) and
 # picking a generous bouncetime of 250ms to smooth out button presses.
 for pin in BUTTONS:
-    GPIO.add_event_detect(pin, GPIO.FALLING, handle_button, bouncetime=10000)
+    GPIO.add_event_detect(pin, GPIO.FALLING, handle_button, bouncetime=250)
 
 # Finally, since button handlers don't require a "while True" loop,
 # we pause the script to prevent it exiting immediately.
