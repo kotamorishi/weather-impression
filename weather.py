@@ -204,11 +204,16 @@ def drawWeather(wi, cv):
     offsetX = 10
     offsetY = 40
 
-    # draw temp string
-    draw.text((5 + offsetX , 35 + offsetY), "Temperature", getDisplayColor(BLACK),font=getFont(fonts.light,fontsize=24))
-    draw.text((0 + offsetX, 50 + offsetY), getTempretureString(temp_cur), getFontColor(temp_cur, wi),font =getFont(fonts.normal, fontsize=120))
+    # Draw temperature string
+    tempOffset = 20 
     temperatureTextSize = draw.textsize(getTempretureString(temp_cur), font =getFont(fonts.normal, fontsize=120))
-    draw.text((temperatureTextSize[0] + 10 + offsetX, 85 + offsetY), getUnitSign(wi.unit), getFontColor(temp_cur, wi), anchor="la", font =getFont(fonts.icon, fontsize=80))
+    if(temperatureTextSize[0] < 71):
+        # when the temp string is a bit short.
+        tempOffset = 45
+
+    draw.text((5 + offsetX , 35 + offsetY), "Temperature", getDisplayColor(BLACK),font=getFont(fonts.light,fontsize=24))
+    draw.text((tempOffset + offsetX, 50 + offsetY), getTempretureString(temp_cur), getFontColor(temp_cur, wi),font =getFont(fonts.normal, fontsize=120))
+    draw.text((temperatureTextSize[0] + 10 + tempOffset + offsetX, 85 + offsetY), getUnitSign(wi.unit), getFontColor(temp_cur, wi), anchor="la", font =getFont(fonts.icon, fontsize=80))
     # humidity
     # draw.text((width - 8, 270 + offsetY), str(humidity) + "%", getDisplayColor(BLACK), anchor="rs",font =getFont(fonts.light,fontsize=24))
 
