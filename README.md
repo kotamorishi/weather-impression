@@ -42,6 +42,15 @@ mode=0
 
 # Forecast interval(Hours) MIN:1
 FORECAST_INTERVAL=1
+
+# tempture unit metric or imperial
+TEMP_UNIT=imperial
+
+# Font color for hot/cold tempture
+# blue
+cold_temp=41
+# red
+hot_temp=88
 ```
 
 # Set up cron
