@@ -29,7 +29,7 @@ copy ```config.txt.default``` to ```config.txt```
 ```
 [openweathermap]
 # set latitude and longitude for your weather info.
-LAT=43.6532,
+LAT=43.6532
 LON=-79.3832
 
 # Your openweathermap API key
