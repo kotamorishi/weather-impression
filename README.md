@@ -19,6 +19,7 @@ sudo apt -y install libopenjp2-7 libtiff5 libatlas-base-dev
 sudo -H pip3 install numpy
 sudo -H pip3 install matplotlib
 sudo -H pip3 install gpiod
+sudo -H pip3 install schedule
 ```
 # Weather information
 Get your API key.
@@ -58,14 +59,12 @@ hot_temp=88
 sudo crontab -e
 ```
 
-add 2 lines at the end(adjust for your path)
+add line at the end
 ```bash
-22 * * * * /usr/bin/python3 /home/pi/weather-impression/weather.py >/dev/null 2>&1
 @reboot /usr/bin/python3 /home/pi/weather-impression/watcher.py >/dev/null 2>&1
 ```
 
-watcher.py handling button press and update config.txt(mode and one time message)
-I will change watcher.py to run it every one hour.
+watcher.py is handling button press and update config.txt(mode and one time message)
 
 # Fonts
 These fonts are already included in this project.

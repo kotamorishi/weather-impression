@@ -4,6 +4,8 @@ import signal
 import RPi.GPIO as GPIO
 import configparser
 import os
+import schedule
+import time
 
 # config file should be the same folder.
 os.chdir('/home/pi/weather-impression')
@@ -25,6 +27,13 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(BUTTONS, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 
+# refresh inky impression screen
+def refreshScreen():
+    import weather
+    weather.update()
+
+
+
 # "handle_button" will be called every time a button is pressed
 # It receives one argument: the associated input pin.
 def handle_button(pin):
@@ -32,7 +41,7 @@ def handle_button(pin):
     config = configparser.ConfigParser()
     config.read_file(open(configFilePath))
 
-    # Top button
+    # Top button(Forecasts/Warning mode)
     if pin == 5:
         mode = config.get('openweathermap', 'mode', raw=False)
         if mode == '1': # already in show warning mode, this set back to default.
@@ -44,7 +53,7 @@ def handle_button(pin):
         with open(configFilePath, 'w') as configfile:
             config.write(configfile)
 
-    # Second button
+    # Second button(Graph mode)
     if pin == 6:
         mode = config.get('openweathermap', 'mode', raw=False)
         if mode == '2': # already in graph mode, this set back to default.
@@ -56,7 +65,7 @@ def handle_button(pin):
         with open(configFilePath, 'w') as configfile:
             config.write(configfile)
 
-    # 4th button
+    # 4th button(C/F)
     if pin == 24:
         unit = config.get('openweathermap', 'TEMP_UNIT', raw=False)
         if unit == 'imperial':
@@ -70,8 +79,7 @@ def handle_button(pin):
 
     # refresh the screen
     try:
-        import weather
-        weather.update()
+        refreshScreen()
     except:
         print("Weather update failed.")
         pass
@@ -84,6 +92,9 @@ def handle_button(pin):
 for pin in BUTTONS:
     GPIO.add_event_detect(pin, GPIO.FALLING, handle_button, bouncetime=250)
 
-# Finally, since button handlers don't require a "while True" loop,
-# we pause the script to prevent it exiting immediately.
-signal.pause()
+#schedule.every().minute.at(":23").do(refreshScreen)
+schedule.every().hour.at(":01").do(refreshScreen)
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)
