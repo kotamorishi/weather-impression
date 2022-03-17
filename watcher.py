@@ -41,27 +41,24 @@ def handle_button(pin):
     config = configparser.ConfigParser()
     config.read_file(open(configFilePath))
 
-    # Top button(Forecasts/Warning mode)
+    # Top button(Forecasts)
     if pin == 5:
-        mode = config.get('openweathermap', 'mode', raw=False)
-        if mode == '1': # already in show warning mode, this set back to default.
-            config.set("openweathermap", "mode", "0")
-            config.set("openweathermap", "one_time_message", "MODE:Forecast")
-        else:
-            config.set("openweathermap", "mode", "1")
-            config.set("openweathermap", "one_time_message", "MODE:Alert message")
+        config.set("openweathermap", "one_time_message", "MODE:Forecast")
+        config.set("openweathermap", "mode", "0")
         with open(configFilePath, 'w') as configfile:
             config.write(configfile)
 
     # Second button(Graph mode)
     if pin == 6:
-        mode = config.get('openweathermap', 'mode', raw=False)
-        if mode == '2': # already in graph mode, this set back to default.
-            config.set("openweathermap", "one_time_message", "MODE:Forecast")
-            config.set("openweathermap", "mode", "0")
-        else:
-            config.set("openweathermap", "mode", "2")
-            config.set("openweathermap", "one_time_message", "MODE:Graph")
+        config.set("openweathermap", "one_time_message", "MODE:Graph")
+        config.set("openweathermap", "mode", "2")
+        with open(configFilePath, 'w') as configfile:
+            config.write(configfile)
+
+    # Second button( mode)
+    if pin == 16:
+        config.set("openweathermap", "one_time_message", "MODE:Alert")
+        config.set("openweathermap", "mode", "1")
         with open(configFilePath, 'w') as configfile:
             config.write(configfile)
 
@@ -74,6 +71,7 @@ def handle_button(pin):
         else:
             config.set("openweathermap", "one_time_message", "Unit:Imperial")
             config.set("openweathermap", "TEMP_UNIT", "imperial")
+        
         with open(configFilePath, 'w') as configfile:
             config.write(configfile)
 
