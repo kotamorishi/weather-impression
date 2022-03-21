@@ -7,7 +7,10 @@ sudo -H pip3 install gpiod
 sudo -H pip3 install schedule
 
 # download and install e-paper driver.
+<<<<<<< HEAD
 cd ~
+=======
+>>>>>>> 51b40b86ce7bca6629c88cf10e035dd7ef4b482f
 git clone https://github.com/pimoroni/inky
 cd inky
 sudo ./install.sh

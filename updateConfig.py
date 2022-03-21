@@ -51,8 +51,8 @@ config.read_file(open(configFilePath))
 
 print(f"{bcolors.OKCYAN}Note : Press enter to keep the current(default) value.{bcolors.ENDC}")
 
-
 print(f"Please enter {bcolors.BOLD}latitude{bcolors.ENDC}")
+
 latitude = input()
 if latitude == "":
     latitude = config.get('openweathermap', 'LAT', raw=False)
