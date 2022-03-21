@@ -28,8 +28,5 @@ echo "@reboot /usr/bin/python3 /home/pi/weather-impression/watcher.py >/dev/null
 sudo crontab mycron
 rm mycron
 
-# run initial set up
-/usr/bin/python3 /home/pi/weather-impression/updateConfig.py
-
-# run first screen draw
-/usr/bin/python3 /home/pi/weather-impression/weather.py
+echo "Run python3 updateConfig.py"
+#/usr/bin/python3 /home/pi/weather-impression/updateConfig.py
