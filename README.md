@@ -7,6 +7,11 @@ I will fix this up when I feel like to do it.
 Weather station for PIMORONI Inky Impression(5.7")
 https://shop.pimoroni.com/products/inky-impression-5-7
 
+# Easy install for Raspberry Pi OS(Buster)
+```bash
+curl https://raw.githubusercontent.com/kotamorishi/weather-impression/main/install.sh | bash
+```
+
 # Pre requesties
 Library for Inky Impression.
 https://github.com/pimoroni/inky
