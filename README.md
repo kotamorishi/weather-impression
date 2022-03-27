@@ -8,6 +8,7 @@ Weather station for PIMORONI Inky Impression(5.7")
 https://shop.pimoroni.com/products/inky-impression-5-7
 
 # Easy install for Raspberry Pi OS(Buster)
+This command will install all requred libraries and apps, also set up cron for superuser.
 ```bash
 curl https://raw.githubusercontent.com/kotamorishi/weather-impression/main/install.sh | bash
 ```
