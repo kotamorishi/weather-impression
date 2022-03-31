@@ -2,7 +2,7 @@
 # set latitude and longitude for your weather info.
 # Tokyo : 35.6754095, 139.7259871
 # Toronto : 43.6532,-79.3832
-LAT=43.6532,
+LAT=43.6532
 LON=-79.3832
 
 # Your openweathermap API key, you can get it from https://openweathermap.org/
