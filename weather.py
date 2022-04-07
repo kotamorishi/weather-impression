@@ -300,7 +300,7 @@ def drawWeather(wi, cv):
         if min(pressureArray) < airPressureMin:
             airPressureMin = min(pressureArray)
         if max(pressureArray) > airPressureMax:
-            airPressureMin = max(pressureArray)
+            airPressureMax = max(pressureArray)
 
         plt.ylim(airPressureMin,airPressureMax)
 
