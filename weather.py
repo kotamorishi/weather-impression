@@ -294,6 +294,16 @@ def drawWeather(wi, cv):
         #annot_max(np.array(xarray),np.array(tempArray))
         #annot_max(np.array(xarray),np.array(pressureArray))
         plt.axis('off')
+        ax = plt.gca()
+        airPressureMin = 990
+        airPressureMax = 1020
+        if min(pressureArray) < airPressureMin:
+            airPressureMin = min(pressureArray)
+        if max(pressureArray) > airPressureMax:
+            airPressureMin = max(pressureArray)
+
+        plt.ylim(airPressureMin,airPressureMax)
+
         plt.savefig('pressure.png', bbox_inches='tight', transparent=True)
         tempGraphImage = Image.open("pressure.png")
         cv.paste(tempGraphImage, (-35, 330), tempGraphImage)
