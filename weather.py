@@ -297,10 +297,10 @@ def drawWeather(wi, cv):
         ax = plt.gca()
         airPressureMin = 990
         airPressureMax = 1020
-        if min(pressureArray) < airPressureMin:
-            airPressureMin = min(pressureArray)
-        if max(pressureArray) > airPressureMax:
-            airPressureMax = max(pressureArray)
+        if min(pressureArray) < airPressureMin - 2:
+            airPressureMin = min(pressureArray) + 2
+        if max(pressureArray) > airPressureMax - 2:
+            airPressureMax = max(pressureArray) + 2
 
         plt.ylim(airPressureMin,airPressureMax)
 
