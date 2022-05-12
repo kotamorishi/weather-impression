@@ -18,6 +18,8 @@ from inky.inky_uc8159 import Inky, BLACK, WHITE, GREEN, RED, YELLOW, ORANGE, BLU
 saturation = 0.5
 canvasSize = (600, 448)
 
+tmpfs_path = "/dev/shm/"
+
 # font file path(Adjust or change whatever you want)
 os.chdir('/home/pi/weather-impression')
 project_root = os.getcwd()
@@ -304,8 +306,8 @@ def drawWeather(wi, cv):
 
         plt.ylim(airPressureMin,airPressureMax)
 
-        plt.savefig('pressure.png', bbox_inches='tight', transparent=True)
-        tempGraphImage = Image.open("pressure.png")
+        plt.savefig(tmpfs_path + 'pressure.png', bbox_inches='tight', transparent=True)
+        tempGraphImage = Image.open(tmpfs_path + "pressure.png")
         cv.paste(tempGraphImage, (-35, 330), tempGraphImage)
 
         # draw temp and feels like in one figure
@@ -323,8 +325,8 @@ def drawWeather(wi, cv):
                 posY = np.array(tempArray).max() + 1
                 plt.text(xarray[idx-1], posY, time.strftime('%p', time.localtime(xarray[idx])))
         plt.axis('off')
-        plt.savefig('temp.png', bbox_inches='tight',  transparent=True)
-        tempGraphImage = Image.open("temp.png")
+        plt.savefig(tmpfs_path+'temp.png', bbox_inches='tight',  transparent=True)
+        tempGraphImage = Image.open(tmpfs_path+"temp.png")
         cv.paste(tempGraphImage, (-35, 300), tempGraphImage)
 
         # draw label
