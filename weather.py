@@ -107,7 +107,7 @@ class weatherInfomation(object):
             self.unit = self.config.get('openweathermap', 'TEMP_UNIT', raw=False)
             self.cold_temp = float(self.config.get('openweathermap', 'cold_temp', raw=False))
             self.hot_temp = float(self.config.get('openweathermap', 'hot_temp', raw=False))
-            self.forecast_api_uri = 'https://api.openweathermap.org/data/2.5/onecall?&lat=' + self.lat + '&lon=' + self.lon +'&appid=' + self.api_key + '&exclude=daily'
+            self.forecast_api_uri = 'https://api.openweathermap.org/data/3.0/onecall?&lat=' + self.lat + '&lon=' + self.lon +'&appid=' + self.api_key + '&exclude=daily'
             if(self.unit == 'imperial'):
                 self.forecast_api_uri = self.forecast_api_uri + "&units=imperial"
             else:
