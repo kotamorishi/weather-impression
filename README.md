@@ -25,7 +25,7 @@ sudo -H pip3 install gpiod
 sudo -H pip3 install schedule
 ```
 # Weather information
-Get your API key.
+Get your API key with One Call API 3.0 Subscription. 1,000 API calls per day for free.
 https://openweathermap.org/
 
 # Configure your weather station
