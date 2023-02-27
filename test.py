@@ -45,6 +45,8 @@ colorMap = {
     '13n':BLUE, 
     '50d':BLACK, # fog
     '50n':BLACK,
+    'sunrise':BLACK,
+    'sunset':BLACK
 }
 # icon name to weather icon mapping
 iconMap = {
@@ -82,7 +84,9 @@ iconMap = {
     'clock12':u'',
 
     'celsius':u'',
-    'fahrenheit':u''
+    'fahrenheit':u'',
+    'sunrise':u'',
+    'sunset':u''
 }
 
 #empty structure
@@ -330,7 +334,7 @@ def drawWeather(wi, cv):
         cv.paste(tempGraphImage, (-35, 300), tempGraphImage)
 
         # draw label
-        draw.rectangle((5, 430, 20, 446), fill=getDisplayColor(RED))
+        draw.rectangle((5, 430, 20, 446), fill=getDisplayColor(RED))/test.png
         draw.text((15 + offsetX, 428), "Pressure", getDisplayColor(BLACK),font=getFont(fonts.normal, fontsize=16))
 
         draw.rectangle((135, 430, 150, 446), fill=getDisplayColor(BLUE))
@@ -339,8 +343,50 @@ def drawWeather(wi, cv):
         draw.rectangle((265, 430, 280, 446), fill=getDisplayColor(GREEN))
         draw.text((275 + offsetX, 428), "Feels like", getDisplayColor(BLACK),font=getFont(fonts.normal, fontsize=16))
         return
-    
 
+    # Sunrise / Sunset mode
+    if wi.mode == '3':
+        print("hello, sunrise")
+        sunrise = wi.weatherInfo['current']['sunrise']
+        sunset = wi.weatherInfo['current']['sunset']
+
+        sunriseFormatted = datetime.fromtimestamp(sunrise).strftime("%#I:%M %p")
+        sunsetFormatted = datetime.fromtimestamp(sunset).strftime("%#I:%M %p")
+
+        print([sunriseFormatted, sunsetFormatted])
+
+        columnWidth = width / 2
+        textColor = (50,50,50)
+        # center = column width / 2 - (text_width * .5)
+        # measure sunrise
+        sunrise_width, _ = getFont(fonts.normal, fontsize=16).getsize("Sunrise")
+        sunriseXOffset = (columnWidth/2) - (sunrise_width * .5)
+        
+        sunriseFormatted_width, _ = getFont(fonts.normal, fontsize=12).getsize(sunriseFormatted)
+        sunriseFormattedXOffset = (columnWidth/2) - (sunriseFormatted_width * .5)
+
+        sunriseIcon_width, _ = getFont(fonts.icon, fontsize=90).getsize(iconMap['sunrise'])
+        sunriseIconXOffset = (columnWidth/2) - (sunriseIcon_width * .5)
+
+        draw.text((sunriseFormattedXOffset, offsetY + 220), sunriseFormatted,textColor,anchor="la", font =getFont(fonts.normal, fontsize=12))
+        draw.text((sunriseIconXOffset, offsetY + 90), iconMap['sunrise'], getDisplayColor(colorMap['sunrise']), anchor="la",font =getFont(fonts.icon, fontsize=90))
+        draw.text((sunriseXOffset,  offsetY + 200), "Sunrise", textColor,anchor="la", font =getFont(fonts.normal, fontsize=16))
+
+        sunset_width, _ = getFont(fonts.normal, fontsize=16).getsize("sunset")
+        sunsetXOffset = columnWidth + (columnWidth/2) - (sunset_width * .5)
+        
+        sunsetFormatted_width, _ = getFont(fonts.normal, fontsize=12).getsize(sunsetFormatted)
+        sunsetFormattedXOffset = columnWidth + (columnWidth/2) - (sunsetFormatted_width * .5)
+
+        sunsetIcon_width, _ = getFont(fonts.icon, fontsize=90).getsize(iconMap['sunset'])
+        sunsetIconXOffset = columnWidth + (columnWidth/2) - (sunsetIcon_width * .5)
+
+        draw.text((sunsetFormattedXOffset, offsetY + 220), sunsetFormatted,textColor,anchor="la", font =getFont(fonts.normal, fontsize=12))
+        draw.text((sunsetIconXOffset, offsetY + 90), iconMap['sunset'], getDisplayColor(colorMap['sunset']), anchor="la",font =getFont(fonts.icon, fontsize=90))
+        draw.text((sunsetXOffset,  offsetY + 200), "sunset", textColor,anchor="la", font =getFont(fonts.normal, fontsize=16))
+
+        return
+    
     forecastIntervalHours = int(wi.forecast_interval)
     forecastRange = 4
     for fi in range(forecastRange):
@@ -401,19 +447,18 @@ def setUpdateStatus(gpiod_pin, busy):
         gpiod_pin.set_value(0)
 
 def update():
-    gpio_pin = initGPIO()
-    setUpdateStatus(gpio_pin, True)
+    # gpio_pin = initGPIO()
+    # setUpdateStatus(gpio_pin, True)
     wi = weatherInfomation()
-
     cv = Image.new("RGB", canvasSize, getDisplayColor(WHITE) )
     #cv = cv.rotate(90, expand=True)
     drawWeather(wi, cv)
-    #cv.save("test.png")
+    cv.save("test.png")
     #cv = cv.rotate(-90, expand=True)
-    inky = Inky()
-    inky.set_image(cv, saturation=saturation)
-    inky.show()
-    setUpdateStatus(gpio_pin, False)
+    # inky = Inky()
+    # inky.set_image(cv, saturation=saturation)
+    # inky.show()
+    # setUpdateStatus(gpio_pin, False)
 
 if __name__ == "__main__":
     update()
