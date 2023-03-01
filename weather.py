@@ -520,18 +520,18 @@ def setUpdateStatus(gpiod_pin, busy):
         gpiod_pin.set_value(0)
 
 def update():
-    # gpio_pin = initGPIO()
-    # setUpdateStatus(gpio_pin, True)
+    gpio_pin = initGPIO()
+    setUpdateStatus(gpio_pin, True)
     wi = weatherInfomation()
     cv = Image.new("RGB", canvasSize, getDisplayColor(WHITE) )
     #cv = cv.rotate(90, expand=True)
     drawWeather(wi, cv)
-    cv.save("test.png")
+    # cv.save("test.png")
     #cv = cv.rotate(-90, expand=True)
-    # inky = Inky()
-    # inky.set_image(cv, saturation=saturation)
-    # inky.show()
-    # setUpdateStatus(gpio_pin, False)
+    inky = Inky()
+    inky.set_image(cv, saturation=saturation)
+    inky.show()
+    setUpdateStatus(gpio_pin, False)
 
 if __name__ == "__main__":
     update()
