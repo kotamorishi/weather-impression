@@ -19,7 +19,7 @@ saturation = 0.5
 canvasSize = (600, 448)
 
 tmpfs_path = "/dev/shm/"
-
+# asdf
 # font file path(Adjust or change whatever you want)
 os.chdir('/home/pi/weather-impression')
 project_root = os.getcwd()
@@ -45,6 +45,8 @@ colorMap = {
     '13n':BLUE, 
     '50d':BLACK, # fog
     '50n':BLACK,
+    'sunrise':BLACK,
+    'sunset':BLACK
 }
 # icon name to weather icon mapping
 iconMap = {
@@ -82,7 +84,9 @@ iconMap = {
     'clock12':u'',
 
     'celsius':u'',
-    'fahrenheit':u''
+    'fahrenheit':u'',
+    'sunrise':u'',
+    'sunset':u''
 }
 
 #empty structure
@@ -330,7 +334,7 @@ def drawWeather(wi, cv):
         cv.paste(tempGraphImage, (-35, 300), tempGraphImage)
 
         # draw label
-        draw.rectangle((5, 430, 20, 446), fill=getDisplayColor(RED))
+        draw.rectangle((5, 430, 20, 446), fill=getDisplayColor(RED))/test.png
         draw.text((15 + offsetX, 428), "Pressure", getDisplayColor(BLACK),font=getFont(fonts.normal, fontsize=16))
 
         draw.rectangle((135, 430, 150, 446), fill=getDisplayColor(BLUE))
@@ -339,8 +343,123 @@ def drawWeather(wi, cv):
         draw.rectangle((265, 430, 280, 446), fill=getDisplayColor(GREEN))
         draw.text((275 + offsetX, 428), "Feels like", getDisplayColor(BLACK),font=getFont(fonts.normal, fontsize=16))
         return
-    
 
+    # Sunrise / Sunset mode
+    if wi.mode == '3':
+        print("hello, sunrise")
+        sunrise = wi.weatherInfo['current']['sunrise']
+        sunset = wi.weatherInfo['current']['sunset']
+
+        sunriseFormatted = datetime.fromtimestamp(sunrise).strftime("%#I:%M %p")
+        sunsetFormatted = datetime.fromtimestamp(sunset).strftime("%#I:%M %p")
+
+        print([sunriseFormatted, sunsetFormatted])
+
+        columnWidth = width / 2
+        textColor = (50,50,50)
+        # center = column width / 2 - (text_width * .5)
+        # measure sunrise
+        sunrise_width, _ = getFont(fonts.normal, fontsize=16).getsize("Sunrise")
+        sunriseXOffset = (columnWidth/2) - (sunrise_width * .5)
+        
+        sunriseFormatted_width, _ = getFont(fonts.normal, fontsize=12).getsize(sunriseFormatted)
+        sunriseFormattedXOffset = (columnWidth/2) - (sunriseFormatted_width * .5)
+
+        sunriseIcon_width, _ = getFont(fonts.icon, fontsize=90).getsize(iconMap['sunrise'])
+        sunriseIconXOffset = (columnWidth/2) - (sunriseIcon_width * .5)
+
+        draw.text((sunriseFormattedXOffset, offsetY + 220), sunriseFormatted,textColor,anchor="la", font =getFont(fonts.normal, fontsize=12))
+        draw.text((sunriseIconXOffset, offsetY + 90), iconMap['sunrise'], getDisplayColor(colorMap['sunrise']), anchor="la",font =getFont(fonts.icon, fontsize=90))
+        draw.text((sunriseXOffset,  offsetY + 200), "Sunrise", textColor,anchor="la", font =getFont(fonts.normal, fontsize=16))
+
+        sunset_width, _ = getFont(fonts.normal, fontsize=16).getsize("sunset")
+        sunsetXOffset = columnWidth + (columnWidth/2) - (sunset_width * .5)
+        
+        sunsetFormatted_width, _ = getFont(fonts.normal, fontsize=12).getsize(sunsetFormatted)
+        sunsetFormattedXOffset = columnWidth + (columnWidth/2) - (sunsetFormatted_width * .5)
+
+        sunsetIcon_width, _ = getFont(fonts.icon, fontsize=90).getsize(iconMap['sunset'])
+        sunsetIconXOffset = columnWidth + (columnWidth/2) - (sunsetIcon_width * .5)
+
+        draw.text((sunsetFormattedXOffset, offsetY + 220), sunsetFormatted,textColor,anchor="la", font =getFont(fonts.normal, fontsize=12))
+        draw.text((sunsetIconXOffset, offsetY + 90), iconMap['sunset'], getDisplayColor(colorMap['sunset']), anchor="la",font =getFont(fonts.icon, fontsize=90))
+        draw.text((sunsetXOffset,  offsetY + 200), "Sunset", textColor,anchor="la", font =getFont(fonts.normal, fontsize=16))
+
+        return
+    
+    if wi.mode == '4':
+        print("ok")
+        import matplotlib.pyplot as plt
+        from matplotlib import font_manager as fm, rcParams
+        import matplotlib
+        import numpy as np
+        # import datetime
+
+        def minutes_since(timestamp):
+            dt = datetime.fromtimestamp(timestamp)
+            timestamp_minutes_since_midnight = dt.hour * 60 + dt.minute
+            return timestamp_minutes_since_midnight
+
+        # icon font setup
+        icon_font = getFont(fonts.icon, fontsize=12)
+        icon_prop = fm.FontProperties(fname=icon_font.path)
+        text_font = getFont(fonts.normal, fontsize=12)
+        text_prop = fm.FontProperties(fname=text_font.path)
+
+        graph_height = 1.1
+        graph_width = 8.4
+
+        x = [i for i in range(24)]
+        # y = [math.sin(math.pi * i / 12) for i in x]
+        y = [math.cos((i / 12 - 1) * math.pi) for i in x]
+
+        fig = plt.figure()
+        fig.set_figheight(graph_height)
+        fig.set_figwidth(graph_width)
+
+        plt.xlim(0, 23)
+        plt.ylim(-1.2, 1.2)
+        # add labels and title
+        # plt.xlabel("Hour of Day")
+        # plt.ylabel("Sun Elevation")
+        plt.title("")
+
+        # add sunrise and sunset lines
+        sunrise_timestamp = wi.weatherInfo['current']['sunrise']
+        sunset_timestamp = wi.weatherInfo['current']['sunset']
+        sunrise_time = minutes_since(sunrise_timestamp)
+        sunset_time = minutes_since(sunset_timestamp)
+        sunrise_hour = sunrise_time / 60
+        sunset_hour = sunset_time / 60
+        sunriseFormatted = datetime.fromtimestamp(sunrise_timestamp).strftime("%#I:%M %p")
+        sunsetFormatted = datetime.fromtimestamp(sunset_timestamp).strftime("%#I:%M %p")
+
+        plt.axvline(x=sunrise_hour, color="orange", linestyle="--")
+        plt.axvline(x=sunset_hour, color="blue", linestyle="--")
+
+        plt.text(sunrise_hour-.35, 1.35, iconMap['sunrise'], fontproperties=icon_prop, ha="right", va="top", color=getGraphColor(YELLOW))
+        plt.text(sunrise_hour-.3, 1.3, iconMap['sunrise'], fontproperties=icon_prop, ha="right", va="top", color=getGraphColor(ORANGE))
+
+        plt.text(sunset_hour+.35, 1.35, iconMap['sunset'], fontproperties=icon_prop, ha="left", va="top", color=getGraphColor(YELLOW))
+        plt.text(sunset_hour+.3, 1.3, iconMap['sunset'], fontproperties=icon_prop, ha="left", va="top", color=getGraphColor(BLUE))
+        plt.text(sunrise_hour-.3, .8, sunriseFormatted, ha="right", va="top", fontproperties=text_prop, rotation="horizontal", color=getGraphColor(ORANGE))
+        plt.text(sunset_hour+.3, .8, sunsetFormatted, ha="left", va="top", fontproperties=text_prop, rotation="horizontal", color=getGraphColor(BLUE))
+
+        normal = getFont(fonts.normal, fontsize=12)
+        plt.rcParams['font.family'] = normal.getname()
+
+        plt.plot(x, y, linewidth=3, color=getGraphColor(RED)) # RGB in 0~1.0
+        #plt.plot(xarray, pressureArray)
+        #annot_max(np.array(xarray),np.array(tempArray))
+        #annot_max(np.array(xarray),np.array(pressureArray))
+        plt.axis('off')
+
+        plt.savefig(tmpfs_path + 'day.png', bbox_inches='tight', transparent=True)
+        tempGraphImage = Image.open(tmpfs_path+"day.png")
+        cv.paste(tempGraphImage, (-35, 300), tempGraphImage)
+
+        return
+    
     forecastIntervalHours = int(wi.forecast_interval)
     forecastRange = 4
     for fi in range(forecastRange):
@@ -401,19 +520,18 @@ def setUpdateStatus(gpiod_pin, busy):
         gpiod_pin.set_value(0)
 
 def update():
-    gpio_pin = initGPIO()
-    setUpdateStatus(gpio_pin, True)
+    # gpio_pin = initGPIO()
+    # setUpdateStatus(gpio_pin, True)
     wi = weatherInfomation()
-
     cv = Image.new("RGB", canvasSize, getDisplayColor(WHITE) )
     #cv = cv.rotate(90, expand=True)
     drawWeather(wi, cv)
-    #cv.save("test.png")
+    cv.save("test.png")
     #cv = cv.rotate(-90, expand=True)
-    inky = Inky()
-    inky.set_image(cv, saturation=saturation)
-    inky.show()
-    setUpdateStatus(gpio_pin, False)
+    # inky = Inky()
+    # inky.set_image(cv, saturation=saturation)
+    # inky.show()
+    # setUpdateStatus(gpio_pin, False)
 
 if __name__ == "__main__":
     update()
