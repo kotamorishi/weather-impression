@@ -434,15 +434,15 @@ def drawWeather(wi, cv):
         sunriseFormatted = datetime.fromtimestamp(sunrise_timestamp).strftime("%#I:%M %p")
         sunsetFormatted = datetime.fromtimestamp(sunset_timestamp).strftime("%#I:%M %p")
 
-        plt.axvline(x=sunrise_hour, color="orange", linestyle="--")
+        plt.axvline(x=sunrise_hour, color="blue", linestyle="--")
         plt.axvline(x=sunset_hour, color="blue", linestyle="--")
 
         plt.text(sunrise_hour-.35, 1.35, iconMap['sunrise'], fontproperties=icon_prop, ha="right", va="top", color=getGraphColor(YELLOW))
-        plt.text(sunrise_hour-.3, 1.3, iconMap['sunrise'], fontproperties=icon_prop, ha="right", va="top", color=getGraphColor(ORANGE))
+        plt.text(sunrise_hour-.3, 1.3, iconMap['sunrise'], fontproperties=icon_prop, ha="right", va="top", color=getGraphColor(BLUE))
 
         plt.text(sunset_hour+.35, 1.35, iconMap['sunset'], fontproperties=icon_prop, ha="left", va="top", color=getGraphColor(YELLOW))
         plt.text(sunset_hour+.3, 1.3, iconMap['sunset'], fontproperties=icon_prop, ha="left", va="top", color=getGraphColor(BLUE))
-        plt.text(sunrise_hour-.3, .8, sunriseFormatted, ha="right", va="top", fontproperties=text_prop, rotation="horizontal", color=getGraphColor(ORANGE))
+        plt.text(sunrise_hour-.3, .8, sunriseFormatted, ha="right", va="top", fontproperties=text_prop, rotation="horizontal", color=getGraphColor(BLUE))
         plt.text(sunset_hour+.3, .8, sunsetFormatted, ha="left", va="top", fontproperties=text_prop, rotation="horizontal", color=getGraphColor(BLUE))
 
         normal = getFont(fonts.normal, fontsize=12)
