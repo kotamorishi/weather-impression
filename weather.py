@@ -19,7 +19,7 @@ saturation = 0.5
 canvasSize = (600, 448)
 
 tmpfs_path = "/dev/shm/"
-# asdf
+
 # font file path(Adjust or change whatever you want)
 os.chdir('/home/pi/weather-impression')
 project_root = os.getcwd()
@@ -334,7 +334,7 @@ def drawWeather(wi, cv):
         cv.paste(tempGraphImage, (-35, 300), tempGraphImage)
 
         # draw label
-        draw.rectangle((5, 430, 20, 446), fill=getDisplayColor(RED))/test.png
+        draw.rectangle((5, 430, 20, 446), fill=getDisplayColor(RED))
         draw.text((15 + offsetX, 428), "Pressure", getDisplayColor(BLACK),font=getFont(fonts.normal, fontsize=16))
 
         draw.rectangle((135, 430, 150, 446), fill=getDisplayColor(BLUE))
@@ -346,14 +346,13 @@ def drawWeather(wi, cv):
 
     # Sunrise / Sunset mode
     if wi.mode == '3':
-        print("hello, sunrise")
         sunrise = wi.weatherInfo['current']['sunrise']
         sunset = wi.weatherInfo['current']['sunset']
 
         sunriseFormatted = datetime.fromtimestamp(sunrise).strftime("%#I:%M %p")
         sunsetFormatted = datetime.fromtimestamp(sunset).strftime("%#I:%M %p")
 
-        print([sunriseFormatted, sunsetFormatted])
+        #print([sunriseFormatted, sunsetFormatted])
 
         columnWidth = width / 2
         textColor = (50,50,50)
@@ -388,7 +387,6 @@ def drawWeather(wi, cv):
         return
     
     if wi.mode == '4':
-        print("ok")
         import matplotlib.pyplot as plt
         from matplotlib import font_manager as fm, rcParams
         import matplotlib
