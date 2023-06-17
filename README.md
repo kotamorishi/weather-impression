@@ -9,6 +9,7 @@ This app can be installed on a fresh installation of Raspberry Pi OS (Buster). W
 
 ## Option 1 : Easy install for Raspberry Pi OS(Buster)
 This command will install all required libraries also set up a cron job for the superuser.
+This script may take 10 to 20 minuits on Pi 3 or older☕
 ```bash
 curl https://raw.githubusercontent.com/kotamorishi/weather-impression/main/install.sh | bash
 ```
