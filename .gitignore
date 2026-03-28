@@ -129,5 +129,6 @@ dmypy.json
 .pyre/
 
 config.txt
+.DS_Store
 
 *.png
