@@ -38,7 +38,11 @@ def refresh_screen():
 
 def handle_button(pin):
     logger.info("Button pressed: pin %d", pin)
-    config = Config()
+    try:
+        config = Config()
+    except Exception as e:
+        logger.error("Failed to load config: %s", e)
+        return
 
     if pin in BUTTON_ACTIONS:
         key, value, message = BUTTON_ACTIONS[pin]

@@ -4,6 +4,7 @@ import math
 import re
 import time
 from datetime import datetime
+from functools import lru_cache
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -39,6 +40,7 @@ def temp_color(temp, config):
 # --- Font / text helpers ---
 
 
+@lru_cache(maxsize=32)
 def get_font(font_type, size=12):
     return ImageFont.truetype(font_type.value, size)
 
@@ -90,7 +92,7 @@ def render(config, weather, error_message=None):
     draw = ImageDraw.Draw(canvas)
     width, height = CANVAS_SIZE
 
-    if weather is None:
+    if weather is None or config is None:
         _draw_error(draw, width, height, error_message)
         return canvas
 

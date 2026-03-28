@@ -28,6 +28,7 @@ fi
 
 # Create virtual environment and install Python dependencies
 echo "[3/5] Setting up Python virtual environment..."
+mkdir -p "$(dirname "$VENV_DIR")"
 python3 -m venv "$VENV_DIR"
 source "$VENV_DIR/bin/activate"
 
