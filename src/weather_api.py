@@ -8,7 +8,12 @@ API_BASE = "https://api.openweathermap.org/data/3.0/onecall"
 def fetch_weather(config):
     """Fetch weather data from OpenWeatherMap One Call API 3.0.
 
-    Returns the parsed JSON response dict, or None on failure.
+    Returns:
+        dict: The parsed JSON response.
+
+    Raises:
+        requests.RequestException: If the HTTP request fails or a non-success
+            status code is returned.
     """
     params = {
         "lat": config.lat,

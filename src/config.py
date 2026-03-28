@@ -21,7 +21,8 @@ class Config:
     def __init__(self, path=CONFIG_PATH):
         self.path = path
         self._parser = configparser.ConfigParser()
-        self._parser.read_file(open(self.path))
+        with open(self.path) as f:
+            self._parser.read_file(f)
         section = "openweathermap"
 
         self.lat = self._parser.get(section, "LAT")
