@@ -16,6 +16,7 @@ from .constants import (
     CANVAS_SIZE, TMPFS_PATH, UNIT_IMPERIAL,
     FontType, ICON_MAP, ICON_COLOR_MAP,
 )
+from .weather_data import WeatherData
 
 # --- Color helpers ---
 
@@ -68,22 +69,32 @@ def font_text_width(font, text):
     return bbox[2] - bbox[0]
 
 
+def _get_icon(icon_code):
+    """Safely look up an icon code, falling back to clear sky."""
+    return ICON_MAP.get(icon_code, ICON_MAP["01d"])
+
+
+def _get_icon_color(icon_code):
+    """Safely look up an icon color, falling back to BLACK."""
+    return ICON_COLOR_MAP.get(icon_code, BLACK)
+
+
 # --- Rendering entry point ---
 
 
-def render(config, weather_data, error_message=None):
+def render(config, weather, error_message=None):
     """Render the weather display and return a PIL Image.
 
     Args:
         config: Config object (may be None if loading failed).
-        weather_data: Parsed weather API response dict, or None on error.
+        weather: WeatherData dataclass, or None on error.
         error_message: Optional error message to display on error screen.
     """
     canvas = Image.new("RGB", CANVAS_SIZE, display_color(WHITE))
     draw = ImageDraw.Draw(canvas)
     width, height = CANVAS_SIZE
 
-    if weather_data is None:
+    if weather is None:
         _draw_error(draw, width, height, error_message)
         return canvas
 
@@ -95,22 +106,21 @@ def render(config, weather_data, error_message=None):
             font=get_font(FontType.BOLD, 12),
         )
 
-    current = weather_data["current"]
-    _draw_header(draw, width, current)
-    _draw_current_weather(draw, width, current, config)
+    _draw_header(draw, width, weather.current)
+    _draw_current_weather(draw, width, weather.current, config)
 
     mode = config.mode
-    if mode == "1" and "alerts" in weather_data:
-        _draw_alert(draw, width, weather_data["alerts"][0])
+    if mode == "1" and weather.alerts:
+        _draw_alert(draw, width, weather.alerts[0])
     elif mode == "2":
-        _draw_graph(draw, canvas, width, height, weather_data)
+        _draw_graph(draw, canvas, width, height, weather.hourly)
     elif mode == "3":
-        _draw_sunrise_icon(draw, width, current)
+        _draw_sunrise_icon(draw, width, weather.current)
     elif mode == "4":
-        _draw_sunrise_graph(canvas, current)
+        _draw_sunrise_graph(canvas, weather.current)
     else:
-        _draw_feels_pressure(draw, width, current, config)
-        _draw_forecast(draw, width, weather_data, config)
+        _draw_feels_pressure(draw, width, weather.current, config)
+        _draw_forecast(draw, width, weather.hourly, config)
 
     return canvas
 
@@ -142,9 +152,8 @@ def _draw_error(draw, width, height, error_message=None):
 
 
 def _draw_header(draw, width, current):
-    epoch = int(current["dt"])
-    date_str = time.strftime("%B %-d", time.localtime(epoch))
-    weekday_str = time.strftime("%a", time.localtime(epoch))
+    date_str = time.strftime("%B %-d", time.localtime(current.dt))
+    weekday_str = time.strftime("%a", time.localtime(current.dt))
 
     draw.text(
         (15, 5), date_str, display_color(BLACK),
@@ -157,13 +166,12 @@ def _draw_header(draw, width, current):
 
 
 def _draw_current_weather(draw, width, current, config):
-    temp = current["temp"]
-    icon = str(current["weather"][0]["icon"])
-    description = current["weather"][0]["description"]
+    icon_code = current.condition.icon
+    description = current.condition.description
 
     ox, oy = 10, 40
 
-    temp_str = format_temperature(temp)
+    temp_str = format_temperature(current.temp)
     temp_w, _ = text_size(draw, temp_str, get_font(FontType.BOLD, 120))
     temp_offset = 45 if temp_w < 71 else 20
 
@@ -173,17 +181,17 @@ def _draw_current_weather(draw, width, current, config):
     )
     draw.text(
         (temp_offset + ox, 50 + oy), temp_str,
-        temp_color(temp, config), font=get_font(FontType.BOLD, 120),
+        temp_color(current.temp, config), font=get_font(FontType.BOLD, 120),
     )
     draw.text(
         (temp_w + 10 + temp_offset + ox, 85 + oy),
-        unit_icon(config.unit), temp_color(temp, config),
+        unit_icon(config.unit), temp_color(current.temp, config),
         anchor="la", font=get_font(FontType.ICON, 80),
     )
 
     draw.text(
-        (440 + ox, 40 + oy), ICON_MAP[icon],
-        display_color(ICON_COLOR_MAP[icon]),
+        (440 + ox, 40 + oy), _get_icon(icon_code),
+        display_color(_get_icon_color(icon_code)),
         anchor="ma", font=get_font(FontType.ICON, 160),
     )
 
@@ -195,22 +203,20 @@ def _draw_current_weather(draw, width, current, config):
 
 def _draw_feels_pressure(draw, width, current, config):
     ox = 10
-    temp_feels = current["feels_like"]
-    pressure = current["pressure"]
 
     draw.text(
         (5 + ox, 215), "Feels like", display_color(BLACK),
         font=get_font(FontType.LIGHT, 24),
     )
-    feels_str = format_temperature(temp_feels)
+    feels_str = format_temperature(current.feels_like)
     draw.text(
         (10 + ox, 240), feels_str,
-        temp_color(temp_feels, config), font=get_font(FontType.BOLD, 50),
+        temp_color(current.feels_like, config), font=get_font(FontType.BOLD, 50),
     )
     feels_w, _ = text_size(draw, feels_str, get_font(FontType.BOLD, 50))
     draw.text(
         (feels_w + 20 + ox, 240), unit_icon(config.unit),
-        temp_color(temp_feels, config),
+        temp_color(current.feels_like, config),
         anchor="la", font=get_font(FontType.ICON, 50),
     )
 
@@ -218,7 +224,7 @@ def _draw_feels_pressure(draw, width, current, config):
         (feels_w + 85 + ox, 215), "Pressure", display_color(BLACK),
         font=get_font(FontType.LIGHT, 24),
     )
-    pressure_str = "%d" % pressure
+    pressure_str = "%d" % current.pressure
     draw.text(
         (feels_w + 90 + ox, 240), pressure_str,
         display_color(BLACK), font=get_font(FontType.BOLD, 50),
@@ -233,10 +239,10 @@ def _draw_feels_pressure(draw, width, current, config):
 def _draw_alert(draw, width, alert):
     ox = 10
     start_str = time.strftime(
-        "%B %-d, %-I:%M %p", time.localtime(alert["start"])
+        "%B %-d, %-I:%M %p", time.localtime(alert.start)
     )
 
-    desc = alert["description"]
+    desc = alert.description
     desc = desc.replace("\n###\n", "").replace("\n\n", "")
     desc = desc.replace("https://", "")
     desc = re.sub(r"([A-Za-z]*:)", r"\n\1", desc)
@@ -244,12 +250,12 @@ def _draw_alert(draw, width, alert):
     desc = desc.replace("\n\n", "")
 
     draw.text(
-        (5 + ox, 215), alert["event"].capitalize(),
+        (5 + ox, 215), alert.event.capitalize(),
         display_color(RED), anchor="la",
         font=get_font(FontType.LIGHT, 24),
     )
     draw.text(
-        (5 + ox, 240), f'{start_str}/{alert["sender_name"]}',
+        (5 + ox, 240), f"{start_str}/{alert.sender_name}",
         display_color(BLACK), font=get_font(FontType.BOLD, 12),
     )
     draw.text(
@@ -258,7 +264,7 @@ def _draw_alert(draw, width, alert):
     )
 
 
-def _draw_forecast(draw, width, weather_data, config):
+def _draw_forecast(draw, width, hourly, config):
     oy = 210
     interval = config.forecast_interval
     num_forecasts = 4
@@ -267,22 +273,21 @@ def _draw_forecast(draw, width, weather_data, config):
 
     for i in range(num_forecasts):
         idx = i * interval + interval
-        try:
-            hourly = weather_data["hourly"][idx]
-        except IndexError:
+        if idx >= len(hourly):
             break
 
-        t = time.strftime("%-I %p", time.localtime(hourly["dt"]))
-        temp = hourly["temp"]
-        icon = hourly["weather"][0]["icon"]
-        desc = hourly["weather"][0]["description"]
+        entry = hourly[idx]
+        icon_code = entry.condition.icon
+        desc = entry.condition.description
+
+        t = time.strftime("%-I %p", time.localtime(entry.dt))
 
         draw.text(
             (30 + i * col_width, oy + 220), t, text_color,
             anchor="la", font=get_font(FontType.BOLD, 12),
         )
         draw.text(
-            (120 + i * col_width, oy + 220), "%2.1f" % temp,
+            (120 + i * col_width, oy + 220), "%2.1f" % entry.temp,
             text_color, anchor="ra", font=get_font(FontType.BOLD, 12),
         )
         draw.text(
@@ -290,25 +295,24 @@ def _draw_forecast(draw, width, weather_data, config):
             text_color, anchor="ma", font=get_font(FontType.BOLD, 16),
         )
         draw.text(
-            (70 + i * col_width, oy + 90), ICON_MAP[icon],
-            display_color(ICON_COLOR_MAP[icon]),
+            (70 + i * col_width, oy + 90), _get_icon(icon_code),
+            display_color(_get_icon_color(icon_code)),
             anchor="ma", font=get_font(FontType.ICON, 80),
         )
 
 
-def _draw_graph(draw, canvas, width, height, weather_data):
+def _draw_graph(draw, canvas, width, height, hourly):
     import matplotlib.pyplot as plt
     import numpy as np
 
-    timestamps, temps, feels, pressures = [], [], [], []
-    for hourly in weather_data["hourly"][:47]:
-        timestamps.append(hourly["dt"])
-        temps.append(hourly["temp"])
-        feels.append(hourly["feels_like"])
-        pressures.append(hourly["pressure"])
-
-    if not timestamps:
+    entries = hourly[:47]
+    if not entries:
         return
+
+    timestamps = [e.dt for e in entries]
+    temps = [e.temp for e in entries]
+    feels = [e.feels_like for e in entries]
+    pressures = [e.pressure for e in entries]
 
     graph_h, graph_w = 1.1, 8.4
 
@@ -365,10 +369,8 @@ def _draw_graph(draw, canvas, width, height, weather_data):
 
 def _draw_sunrise_icon(draw, width, current):
     oy = 210
-    sunrise = current["sunrise"]
-    sunset = current["sunset"]
-    sunrise_fmt = datetime.fromtimestamp(sunrise).strftime("%-I:%M %p")
-    sunset_fmt = datetime.fromtimestamp(sunset).strftime("%-I:%M %p")
+    sunrise_fmt = datetime.fromtimestamp(current.sunrise).strftime("%-I:%M %p")
+    sunset_fmt = datetime.fromtimestamp(current.sunset).strftime("%-I:%M %p")
 
     col_w = width / 2
     text_color = (50, 50, 50)
@@ -402,17 +404,14 @@ def _draw_sunrise_graph(canvas, current):
     import matplotlib.pyplot as plt
     from matplotlib import font_manager as fm
 
-    sunrise_ts = current["sunrise"]
-    sunset_ts = current["sunset"]
-
     def to_hour(ts):
         dt = datetime.fromtimestamp(ts)
         return dt.hour + dt.minute / 60
 
-    sunrise_h = to_hour(sunrise_ts)
-    sunset_h = to_hour(sunset_ts)
-    sunrise_fmt = datetime.fromtimestamp(sunrise_ts).strftime("%-I:%M %p")
-    sunset_fmt = datetime.fromtimestamp(sunset_ts).strftime("%-I:%M %p")
+    sunrise_h = to_hour(current.sunrise)
+    sunset_h = to_hour(current.sunset)
+    sunrise_fmt = datetime.fromtimestamp(current.sunrise).strftime("%-I:%M %p")
+    sunset_fmt = datetime.fromtimestamp(current.sunset).strftime("%-I:%M %p")
 
     icon_font = get_font(FontType.ICON, 12)
     icon_prop = fm.FontProperties(fname=icon_font.path)
