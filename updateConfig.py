@@ -1,110 +1,90 @@
 #!/usr/bin/env python3
-#
-# This scirpt is used to update the config file.
-# You can modify the config file with any text editor.
-#
-import configparser
+"""Interactive configuration editor for Weather Impression."""
+
+import sys
 import os
 
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    CYELLOW = '\33[33m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from src.config import Config, CONFIG_PATH
 
 
-print("Weather Impression - Config")
-# print multiple lines
-print(
-    f"""{bcolors.OKCYAN}
-  __      __               __  .__                               
-/  \    /  \ ____ _____ _/  |_|  |__   ___________              
-\   \/\/   // __ \\\\__  \\\\   __\  |  \_/ __ \_  __ \             
- \        /\  ___/ / __ \|  | |   Y  \  ___/|  | \/             
-  \__/\  /  \___  >____  /__| |___|  /\___  >__|                
-       \/       \/     \/          \/     \/                    
-{bcolors.CYELLOW}.__                                           .__               
-|__| _____ _____________   ____   ______ _____|__| ____   ____  
-|  |/     \\\\____ \_  __ \_/ __ \ /  ___//  ___/  |/  _ \ /    \ 
-|  |  Y Y  \  |_> >  | \/\  ___/ \___ \ \___ \|  (  <_> )   |  \\
-|__|__|_|  /   __/|__|    \___  >____  >____  >__|\____/|___|  /
-         \/|__|               \/     \/     \/               \/     
-         {bcolors.ENDC}""")
+class Colors:
+    HEADER = "\033[95m"
+    BLUE = "\033[94m"
+    CYAN = "\033[96m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[33m"
+    RED = "\033[91m"
+    END = "\033[0m"
+    BOLD = "\033[1m"
 
 
-# config file should be the same folder.
-os.chdir('/home/pi/weather-impression')
-project_root = os.getcwd()
-configFilePath = project_root + '/config.txt'
-
-print(f"{bcolors.OKBLUE}Config file : " + configFilePath + f"{bcolors.ENDC}")
+def colored(text, color):
+    return f"{color}{text}{Colors.END}"
 
 
-config = configparser.ConfigParser()
-config.read_file(open(configFilePath))
-
-print(f"{bcolors.OKCYAN}Note : Press enter to keep the current(default) value.{bcolors.ENDC}")
-
-print(f"Please enter {bcolors.BOLD}latitude{bcolors.ENDC}")
-
-latitude = input()
-if latitude == "":
-    latitude = config.get('openweathermap', 'LAT', raw=False)
-    print(f"{bcolors.OKCYAN}Latitude : " + latitude + f"{bcolors.ENDC}")
-
-print(f"Please enter {bcolors.BOLD}longitude{bcolors.ENDC}")
-longitude = input()
-if longitude == "":
-    longitude = config.get('openweathermap', 'LON', raw=False)
-    print(f"{bcolors.OKCYAN}longitude : " + longitude + f"{bcolors.ENDC}")
-
-print("Please enter openweathermap API key")
-print(f"{bcolors.OKBLUE}You can get your key at https://openweathermap.com{bcolors.ENDC}")
-api_key = input()
-if api_key == "":
-    api_key = config.get('openweathermap', 'API_KEY', raw=False)
-    print(f"{bcolors.OKCYAN}API key : " + api_key + f"{bcolors.ENDC}")
+def prompt(label, current_value):
+    """Prompt user for input, returning current value if empty."""
+    print(f"Please enter {colored(label, Colors.BOLD)}")
+    value = input()
+    if not value:
+        value = current_value
+        print(colored(f"  {label}: {value}", Colors.CYAN))
+    return value
 
 
-print("Please enter weather forecast interval in hours. (default : 1 hours x 4 forecasts)")
-print(f"{bcolors.OKBLUE}Number 1 to 4{bcolors.ENDC}")
-forecast_interval = input()
-if forecast_interval == "":
-    forecast_interval = config.get('openweathermap', 'FORECAST_INTERVAL', raw=False)
-    print(f"{bcolors.OKCYAN}Forecast interval : " + forecast_interval + f"{bcolors.ENDC}")
+def main():
+    print(colored("""
+  __      __               __  .__
+ /  \\    /  \\ ____ _____ _/  |_|  |__   ___________
+ \\   \\/\\/   // __ \\\\__  \\\\   __\\  |  \\_/ __ \\_  __ \\
+  \\        /\\  ___/ / __ \\|  | |   Y  \\  ___/|  | \\/
+   \\__/\\  /  \\___  >____  /__| |___|  /\\___  >__|
+        \\/       \\/     \\/          \\/     \\/
+    """, Colors.CYAN))
 
-# ask user to save or not
-# print latitude, longitude, api_key
-print("Latitude : " + f"{bcolors.OKGREEN}" + latitude + f"{bcolors.ENDC}")
-print("Longitude : " + f"{bcolors.OKGREEN}" + longitude + f"{bcolors.ENDC}")
-print("API key : " + f"{bcolors.OKGREEN}" + api_key + f"{bcolors.ENDC}")
+    print(colored(""".__
+|__| _____ _____________   ____   ______ _____|__| ____   ____
+|  |/     \\\\____ \\_  __ \\_/ __ \\ /  ___//  ___/  |/  _ \\ /    \\
+|  |  Y Y  \\  |_> >  | \\/\\  ___/ \\___ \\ \\___ \\|  (  <_> )   |  \\
+|__|__|_|  /   __/|__|    \\___  >____  >____  >__|\\____/|___|  /
+         \\/|__|               \\/     \\/     \\/               \\/
+    """, Colors.YELLOW))
 
-print(f"{bcolors.CYELLOW}Do you want to save the configuration? (y/n){bcolors.ENDC}")
-save = input()
+    print(colored(f"Config file: {CONFIG_PATH}", Colors.BLUE))
 
-# when user enter y, save the configuration
-if save == 'y':
+    config = Config()
 
-    config.set("openweathermap", "LAT", latitude)
-    config.set("openweathermap", "LON", longitude)
-    config.set("openweathermap", "API_KEY", api_key)
-    config.set("openweathermap", "FORECAST_INTERVAL", forecast_interval)
+    print(colored("Note: Press enter to keep the current (default) value.", Colors.CYAN))
 
-    config.set("openweathermap", "one_time_message", "Configured.")
-    config.set("openweathermap", "mode", "2")
-    config.set("openweathermap", "TEMP_UNIT", "metric")
-    config.set("openweathermap", "cold_temp", "7")
-    config.set("openweathermap", "hot_temp", "27")
+    latitude = prompt("Latitude", config.lat)
+    longitude = prompt("Longitude", config.lon)
+    api_key = prompt("API Key", config.api_key)
+    print(colored("You can get your key at https://openweathermap.org", Colors.BLUE))
+    forecast_interval = prompt("Forecast interval (hours, 1-12)", str(config.forecast_interval))
 
-    with open(configFilePath, 'w') as configfile:
-        config.write(configfile)
+    print()
+    print(f"Latitude:  {colored(latitude, Colors.GREEN)}")
+    print(f"Longitude: {colored(longitude, Colors.GREEN)}")
+    print(f"API key:   {colored(api_key, Colors.GREEN)}")
+    print(f"Interval:  {colored(forecast_interval, Colors.GREEN)}")
 
-    print(f"{bcolors.OKCYAN}Configuration saved.{bcolors.ENDC}")
-else:
-    print(f"{bcolors.FAIL}Configuration not saved.{bcolors.ENDC}")
+    print(colored("\nDo you want to save the configuration? (y/n)", Colors.YELLOW))
+    if input().strip().lower() == "y":
+        config.set_value("LAT", latitude)
+        config.set_value("LON", longitude)
+        config.set_value("API_KEY", api_key)
+        config.set_value("FORECAST_INTERVAL", forecast_interval)
+        config.set_value("one_time_message", "Configured.")
+        config.set_value("mode", "2")
+        config.set_value("TEMP_UNIT", "metric")
+        config.set_value("cold_temp", "7")
+        config.set_value("hot_temp", "27")
+        print(colored("Configuration saved.", Colors.CYAN))
+    else:
+        print(colored("Configuration not saved.", Colors.RED))
+
+
+if __name__ == "__main__":
+    main()
