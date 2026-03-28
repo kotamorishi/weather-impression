@@ -1,16 +1,23 @@
 #!/usr/bin/env python3
 """Weather Impression - main entry point."""
 
+import logging
 import sys
 import os
 
-# Ensure the project root is in the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from src.config import Config
 from src.weather_api import fetch_weather
+from src.weather_data import WeatherData
 from src.renderer import render
 from src.display import DisplayController
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 _display = None
 
@@ -28,17 +35,20 @@ def update():
     display.set_busy(True)
     try:
         config = None
-        weather_data = None
+        weather = None
         error_message = None
         try:
             config = Config()
-            weather_data = fetch_weather(config)
+            raw_data = fetch_weather(config)
+            weather = WeatherData.from_dict(raw_data)
+            logger.info("Weather data loaded successfully")
         except Exception as e:
-            print(f"Failed to load weather data: {e}")
+            logger.error("Failed to load weather data: %s", e)
             error_message = str(e)
 
-        image = render(config, weather_data, error_message=error_message)
+        image = render(config, weather, error_message=error_message)
         display.show(image)
+        logger.info("Display updated")
     finally:
         display.set_busy(False)
 

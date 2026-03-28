@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Button watcher and scheduled screen refresh for Weather Impression."""
 
+import logging
 import sys
 import os
 from datetime import timedelta
@@ -9,10 +10,15 @@ import gpiod
 from gpiod.line import Bias, Edge
 import schedule
 
-# Ensure the project root is in the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from src.config import Config
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 # GPIO button pins (top to bottom: A, B, C, D)
 BUTTONS = [5, 6, 16, 24]
@@ -31,13 +37,13 @@ def refresh_screen():
 
 
 def handle_button(pin):
+    logger.info("Button pressed: pin %d", pin)
     config = Config()
 
     if pin in BUTTON_ACTIONS:
         key, value, message = BUTTON_ACTIONS[pin]
         config.set_values({"one_time_message": message, key: value})
     elif pin == 24:
-        # Toggle temperature unit
         if config.unit == "imperial":
             config.set_values({"one_time_message": "Unit:Metric", "TEMP_UNIT": "metric"})
         else:
@@ -46,7 +52,7 @@ def handle_button(pin):
     try:
         refresh_screen()
     except Exception as e:
-        print(f"Weather update failed: {e}")
+        logger.error("Weather update failed: %s", e)
 
 
 def main():
@@ -62,10 +68,10 @@ def main():
         },
     )
 
-    # Schedule hourly screen refresh
     schedule.every().hour.at(":01").do(refresh_screen)
 
-    # Main loop: poll for button events and run scheduled tasks
+    logger.info("Watcher started, listening for button events")
+
     while True:
         if request.wait_edge_events(timeout=timedelta(seconds=1)):
             events = request.read_edge_events()
