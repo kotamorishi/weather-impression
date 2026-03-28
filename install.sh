@@ -10,15 +10,25 @@ INSTALL_DIR="$HOME/weather-impression"
 VENV_DIR="$HOME/.virtualenvs/weather-impression"
 
 # Install system dependencies
-echo "[1/5] Installing system dependencies..."
+echo "[1/6] Installing system dependencies..."
 sudo apt-get update
-sudo apt -y install git python3-pip python3-venv libopenjp2-7 libatlas-base-dev libopenblas-dev
+sudo apt-get -y install git python3-pip python3-venv libopenjp2-7 libopenblas-dev
 
 # Install libtiff (package name varies by OS version)
-sudo apt -y install libtiff6 2>/dev/null || sudo apt -y install libtiff5
+sudo apt-get -y install libtiff6 || sudo apt-get -y install libtiff5 || true
+
+# Enable SPI and I2C (required for Inky display)
+echo "[2/6] Enabling SPI and I2C interfaces..."
+if command -v raspi-config &> /dev/null; then
+    sudo raspi-config nonint do_spi 0
+    sudo raspi-config nonint do_i2c 0
+    echo "  SPI and I2C enabled."
+else
+    echo "  raspi-config not found. Please enable SPI and I2C manually."
+fi
 
 # Clone or update the project
-echo "[2/5] Setting up weather-impression..."
+echo "[3/6] Setting up weather-impression..."
 if [ -d "$INSTALL_DIR" ]; then
     echo "  Directory already exists, pulling latest..."
     cd "$INSTALL_DIR" && git pull
@@ -27,7 +37,7 @@ else
 fi
 
 # Create virtual environment and install Python dependencies
-echo "[3/5] Setting up Python virtual environment..."
+echo "[4/6] Setting up Python virtual environment..."
 mkdir -p "$(dirname "$VENV_DIR")"
 python3 -m venv "$VENV_DIR"
 source "$VENV_DIR/bin/activate"
@@ -37,8 +47,8 @@ pip3 install inky Pillow numpy matplotlib "gpiod>=2" schedule requests
 
 deactivate
 
-# Install Inky driver (uses Pimoroni's installer)
-echo "[4/5] Installing Inky display driver..."
+# Install Inky driver (system-level SPI/I2C support)
+echo "[5/6] Installing Inky display driver..."
 if [ -d "$HOME/inky" ]; then
     echo "  Inky directory already exists, pulling latest..."
     cd "$HOME/inky" && git pull
@@ -57,7 +67,7 @@ if [ ! -f config.txt ]; then
 fi
 
 # Set up cron job
-echo "[5/5] Setting up cron job..."
+echo "[6/6] Setting up cron job..."
 CRON_CMD="@reboot $VENV_DIR/bin/python3 $INSTALL_DIR/watcher.py >/dev/null 2>&1"
 (sudo crontab -l 2>/dev/null | grep -v "weather-impression/watcher.py" || true; echo "$CRON_CMD") | sudo crontab -
 
@@ -66,5 +76,10 @@ echo "=== Installation complete! ==="
 echo ""
 echo "Next steps:"
 echo "  1. Edit $INSTALL_DIR/config.txt with your OpenWeatherMap API key"
+echo "     - Set LAT and LON to your location"
+echo "     - Set API_KEY from https://openweathermap.org/"
 echo "  2. Or run: $VENV_DIR/bin/python3 $INSTALL_DIR/updateConfig.py"
 echo "  3. Reboot to start the weather station"
+echo ""
+echo "To test immediately:"
+echo "  $VENV_DIR/bin/python3 $INSTALL_DIR/weather.py"

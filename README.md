@@ -12,7 +12,7 @@ https://shop.pimoroni.com/products/inky-impression-5-7
 ## How to install
 
 ### Option 1: Easy install
-This command will install all required libraries and set up a cron job.
+This command will install all required libraries, enable SPI/I2C, and set up a cron job.
 This script may take 10 to 20 minutes on Pi 3 or older.
 ```bash
 curl https://raw.githubusercontent.com/kotamorishi/weather-impression/main/install.sh | bash
@@ -20,38 +20,56 @@ curl https://raw.githubusercontent.com/kotamorishi/weather-impression/main/insta
 
 ### Option 2: Manual install
 
-#### 2-1 Install libraries
-To use [Pimoroni Inky Impression](https://github.com/pimoroni/inky), install the required Python libraries. Additionally, numpy and matplotlib are needed for graphs, and gpiod for GPIO control.
-
+#### 2-1 Install system dependencies
 ```bash
-sudo apt -y install libopenjp2-7 libatlas-base-dev libopenblas-dev python3-venv
-sudo apt -y install libtiff6  # or libtiff5 on older OS
+sudo apt-get update
+sudo apt-get -y install git python3-pip python3-venv libopenjp2-7 libopenblas-dev
+sudo apt-get -y install libtiff6  # or libtiff5 on Bookworm
+```
 
-# Create a virtual environment
+#### 2-2 Enable SPI and I2C
+The Inky display communicates via SPI and I2C. Enable them:
+```bash
+sudo raspi-config nonint do_spi 0
+sudo raspi-config nonint do_i2c 0
+```
+A reboot is required after enabling these interfaces.
+
+#### 2-3 Clone this repo
+```bash
+git clone https://github.com/kotamorishi/weather-impression.git ~/weather-impression
+```
+
+#### 2-4 Set up Python virtual environment
+```bash
+mkdir -p ~/.virtualenvs
 python3 -m venv ~/.virtualenvs/weather-impression
 source ~/.virtualenvs/weather-impression/bin/activate
 
+pip3 install --upgrade pip
 pip3 install inky Pillow numpy matplotlib "gpiod>=2" schedule requests
 ```
 
-#### 2-2 Install Inky driver
+#### 2-5 Install Inky driver
+The Pimoroni installer configures system-level SPI/I2C support:
 ```bash
 cd ~
 git clone https://github.com/pimoroni/inky
 cd inky
-./install.sh
+sudo ./install.sh
 ```
 
-#### 2-3 Get your weather information API key
+#### 2-6 Get your weather information API key
 This project uses the OpenWeatherMap API to obtain weather information. You will need an API key with a One Call API 3.0 Subscription. The subscription allows for 1,000 API calls per day for free. You can obtain the API key at [openweathermap.org](https://openweathermap.org/)
 
-#### 2-4 Clone this repo
-```bash
-git clone https://github.com/kotamorishi/weather-impression.git
-```
-
-#### 2-5 Configure your weather station
+#### 2-7 Configure your weather station
 Copy `config.txt.default` to `config.txt` and update your settings:
+
+```bash
+cd ~/weather-impression
+cp config.txt.default config.txt
+nano config.txt
+```
 
 ```ini
 [openweathermap]
@@ -78,15 +96,20 @@ cold_temp=41
 hot_temp=88
 ```
 
-#### 2-6 Set up cron
+#### 2-8 Test the display
+```bash
+~/.virtualenvs/weather-impression/bin/python3 ~/weather-impression/weather.py
+```
+
+#### 2-9 Set up cron
 Open up the cron setting file:
 ```bash
 sudo crontab -e
 ```
 
-Add this line (adjust the path to match your installation):
+Add this line:
 ```bash
-@reboot ~/.virtualenvs/weather-impression/bin/python3 ~/weather-impression/watcher.py >/dev/null 2>&1
+@reboot /home/<your-username>/.virtualenvs/weather-impression/bin/python3 /home/<your-username>/weather-impression/watcher.py >/dev/null 2>&1
 ```
 
 `watcher.py` handles button presses and updates the display on a schedule.
