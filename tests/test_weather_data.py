@@ -3,7 +3,7 @@
 import pytest
 from src.weather_data import (
     WeatherCondition, CurrentWeather, HourlyForecast,
-    WeatherAlert, WeatherData, _int, _float,
+    WeatherAlert, WeatherData, _int, _float, _str,
 )
 
 
@@ -44,6 +44,23 @@ class TestSafeConversion:
         assert _float({"value": 1}) == 0.0
 
 
+class TestStrConversion:
+    def test_str_normal(self):
+        assert _str("hello") == "hello"
+
+    def test_str_from_int(self):
+        assert _str(123) == "123"
+
+    def test_str_from_none_returns_default(self):
+        assert _str(None) == ""
+
+    def test_str_from_none_with_custom_default(self):
+        assert _str(None, "fallback") == "fallback"
+
+    def test_str_empty_string(self):
+        assert _str("") == ""
+
+
 # --- WeatherCondition ---
 
 class TestWeatherCondition:
@@ -82,6 +99,12 @@ class TestWeatherCondition:
     def test_missing_description(self):
         c = WeatherCondition.from_dict({"icon": "04n"})
         assert c.icon == "04n"
+        assert c.description == ""
+
+    def test_null_icon(self):
+        """JSON null for icon should not produce "None" string."""
+        c = WeatherCondition.from_dict({"icon": None, "description": None})
+        assert c.icon == "01d"
         assert c.description == ""
 
 
@@ -223,6 +246,13 @@ class TestWeatherAlert:
     def test_start_as_invalid(self):
         a = WeatherAlert.from_dict({"start": "not a timestamp"})
         assert a.start == 0
+
+    def test_null_event_and_description(self):
+        """JSON null values should not produce "None" string."""
+        a = WeatherAlert.from_dict({"event": None, "sender_name": None, "description": None})
+        assert a.event == ""
+        assert a.sender_name == ""
+        assert a.description == ""
 
 
 # --- WeatherData (top level) ---

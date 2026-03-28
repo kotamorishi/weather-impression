@@ -1,7 +1,6 @@
 """Parse raw OpenWeatherMap JSON into typed dataclasses with safe defaults."""
 
 from dataclasses import dataclass, field
-import time
 
 
 @dataclass
@@ -14,8 +13,8 @@ class WeatherCondition:
         if not isinstance(data, dict):
             return cls()
         return cls(
-            icon=str(data.get("icon", "01d")),
-            description=str(data.get("description", "")),
+            icon=_str(data.get("icon"), "01d"),
+            description=_str(data.get("description"), ""),
         )
 
 
@@ -93,10 +92,10 @@ class WeatherAlert:
         if not isinstance(data, dict):
             return cls()
         return cls(
-            event=str(data.get("event", "")),
-            sender_name=str(data.get("sender_name", "")),
+            event=_str(data.get("event"), ""),
+            sender_name=_str(data.get("sender_name"), ""),
             start=_int(data.get("start", 0)),
-            description=str(data.get("description", "")),
+            description=_str(data.get("description"), ""),
         )
 
 
@@ -130,6 +129,13 @@ class WeatherData:
         alerts = [WeatherAlert.from_dict(a) for a in raw_alerts]
 
         return cls(current=current, hourly=hourly, alerts=alerts)
+
+
+def _str(value, default=""):
+    """Safely convert to str, treating None as missing."""
+    if value is None:
+        return default
+    return str(value)
 
 
 def _int(value):

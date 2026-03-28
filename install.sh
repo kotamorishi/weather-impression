@@ -46,7 +46,7 @@ else
     git clone https://github.com/pimoroni/inky
 fi
 cd "$HOME/inky"
-./install.sh
+sudo ./install.sh
 
 # Copy default config if needed
 cd "$INSTALL_DIR"
