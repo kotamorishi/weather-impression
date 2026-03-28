@@ -274,7 +274,7 @@ def _draw_feels_pressure(draw, width, current, config):
 def _draw_alert(draw, width, alert):
     ox = 10
     start_str = time.strftime(
-        "%B %-d, %H:%M %p", time.localtime(alert["start"])
+        "%B %-d, %-I:%M %p", time.localtime(alert["start"])
     )
 
     desc = alert["description"]
