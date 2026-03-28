@@ -33,7 +33,14 @@ The Inky display communicates via SPI and I2C. Enable them:
 sudo raspi-config nonint do_spi 0
 sudo raspi-config nonint do_i2c 0
 ```
-A reboot is required after enabling these interfaces.
+
+Also add the SPI CS0 overlay so Inky can control the chip-select pin via GPIO.
+Add this line to `/boot/firmware/config.txt` after `dtparam=spi=on`:
+```
+dtoverlay=spi0-0cs
+```
+
+A reboot is required after these changes.
 
 #### 2-3 Clone this repo
 ```bash
