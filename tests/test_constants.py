@@ -1,7 +1,7 @@
 """Tests for constants.py — mapping consistency."""
 
-from src.constants import ICON_MAP, ICON_COLOR_MAP, FontType
 import os
+from src.constants import ICON_MAP, ICON_COLOR_MAP, FontType, Color, COLOR_PALETTE
 
 
 class TestIconMaps:
@@ -33,6 +33,22 @@ class TestIconMaps:
         for key, value in ICON_MAP.items():
             assert isinstance(value, str), f"ICON_MAP['{key}'] is not a string"
             assert len(value) > 0, f"ICON_MAP['{key}'] is empty"
+
+    def test_icon_colors_are_valid_color_enum(self):
+        for key, value in ICON_COLOR_MAP.items():
+            assert isinstance(value, Color), f"ICON_COLOR_MAP['{key}'] is not a Color enum"
+
+
+class TestColorPalette:
+    def test_palette_has_entries_for_all_colors(self):
+        for color in Color:
+            assert color.value < len(COLOR_PALETTE), f"No palette entry for {color.name}"
+
+    def test_palette_values_are_rgb_tuples(self):
+        for i, rgb in enumerate(COLOR_PALETTE):
+            assert isinstance(rgb, tuple), f"Palette[{i}] is not a tuple"
+            assert len(rgb) == 3, f"Palette[{i}] doesn't have 3 components"
+            assert all(0 <= c <= 255 for c in rgb), f"Palette[{i}] has out-of-range values"
 
 
 class TestFontType:

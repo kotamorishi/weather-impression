@@ -1,51 +1,13 @@
-"""Shared test fixtures and mock setup for hardware-dependent modules."""
+"""Shared test fixtures."""
 
 import os
 import sys
-import types
 import pytest
 import tempfile
 import shutil
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# --- Mock the inky hardware module before any src imports ---
-
-# The Inky display library is only available on Raspberry Pi hardware.
-# We mock it so tests can run on any development machine.
-
-DESATURATED_PALETTE = [
-    (0, 0, 0),        # BLACK = 0
-    (255, 255, 255),   # WHITE = 1
-    (0, 255, 0),       # GREEN = 2
-    (0, 0, 255),       # BLUE = 3
-    (255, 0, 0),       # RED = 4
-    (255, 255, 0),     # YELLOW = 5
-    (255, 165, 0),     # ORANGE = 6
-    (128, 0, 128),     # placeholder 7
-]
-
-mock_inky_uc8159 = types.ModuleType("inky.inky_uc8159")
-mock_inky_uc8159.BLACK = 0
-mock_inky_uc8159.WHITE = 1
-mock_inky_uc8159.GREEN = 2
-mock_inky_uc8159.BLUE = 3
-mock_inky_uc8159.RED = 4
-mock_inky_uc8159.YELLOW = 5
-mock_inky_uc8159.ORANGE = 6
-mock_inky_uc8159.DESATURATED_PALETTE = DESATURATED_PALETTE
-mock_inky_uc8159.Inky = type("Inky", (), {
-    "__init__": lambda self: None,
-    "set_image": lambda self, img, saturation=0.5: None,
-    "show": lambda self: None,
-})
-
-mock_inky = types.ModuleType("inky")
-mock_inky.inky_uc8159 = mock_inky_uc8159
-
-sys.modules["inky"] = mock_inky
-sys.modules["inky.inky_uc8159"] = mock_inky_uc8159
 
 
 # --- Test data fixtures ---

@@ -1,12 +1,12 @@
-"""Display constants, icon/color mappings, and font definitions."""
+"""Display constants, icon/color mappings, and font definitions.
+
+This module is hardware-independent — no imports from inky or gpiod.
+Color palette values are defined here directly so that renderer and
+tests can work without the Inky hardware library installed.
+"""
 
 import os
-from enum import Enum
-
-from inky.inky_uc8159 import (
-    BLACK, WHITE, GREEN, RED, YELLOW, ORANGE, BLUE,
-    DESATURATED_PALETTE as COLOR_PALETTE,
-)
+from enum import Enum, IntEnum
 
 # --- Project paths ---
 
@@ -21,6 +21,32 @@ CANVAS_SIZE = (CANVAS_WIDTH, CANVAS_HEIGHT)
 SATURATION = 0.5
 
 UNIT_IMPERIAL = "imperial"
+
+# --- Color palette (matches Inky Impression DESATURATED_PALETTE) ---
+
+
+class Color(IntEnum):
+    BLACK = 0
+    WHITE = 1
+    GREEN = 2
+    BLUE = 3
+    RED = 4
+    YELLOW = 5
+    ORANGE = 6
+    CLEAN = 7
+
+
+# RGB values matching inky.inky_uc8159.DESATURATED_PALETTE
+COLOR_PALETTE = [
+    (0, 0, 0),        # BLACK
+    (255, 255, 255),   # WHITE
+    (0, 255, 0),       # GREEN
+    (0, 0, 255),       # BLUE
+    (255, 0, 0),       # RED
+    (255, 255, 0),     # YELLOW
+    (255, 128, 0),     # ORANGE
+    (255, 255, 255),   # CLEAN (same as white)
+]
 
 # --- Font definitions ---
 
@@ -56,17 +82,17 @@ for _h in range(1, 13):
     ICON_MAP[f"clock{_h}"] = chr(0xF089 + _h)
 ICON_MAP["clock12"] = "\uf089"
 
-# --- Icon color mappings (palette index per weather icon) ---
+# --- Icon color mappings (Color enum per weather icon) ---
 
 ICON_COLOR_MAP = {
-    "01d": ORANGE, "01n": YELLOW,
-    "02d": BLACK, "02n": BLACK,
-    "03d": BLACK, "03n": BLACK,
-    "04d": BLACK, "04n": BLACK,
-    "09d": BLACK, "09n": BLACK,
-    "10d": BLUE, "10n": BLUE,
-    "11d": RED, "11n": RED,
-    "13d": BLUE, "13n": BLUE,
-    "50d": BLACK, "50n": BLACK,
-    "sunrise": BLACK, "sunset": BLACK,
+    "01d": Color.ORANGE, "01n": Color.YELLOW,
+    "02d": Color.BLACK, "02n": Color.BLACK,
+    "03d": Color.BLACK, "03n": Color.BLACK,
+    "04d": Color.BLACK, "04n": Color.BLACK,
+    "09d": Color.BLACK, "09n": Color.BLACK,
+    "10d": Color.BLUE, "10n": Color.BLUE,
+    "11d": Color.RED, "11n": Color.RED,
+    "13d": Color.BLUE, "13n": Color.BLUE,
+    "50d": Color.BLACK, "50n": Color.BLACK,
+    "sunrise": Color.BLACK, "sunset": Color.BLACK,
 }
