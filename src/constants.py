@@ -6,12 +6,16 @@ tests can work without the Inky hardware library installed.
 """
 
 import os
+import tempfile
 from enum import Enum, IntEnum
 
 # --- Project paths ---
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TMPFS_PATH = "/dev/shm/"
+
+# Use /dev/shm (Linux tmpfs) if available, otherwise fall back to system temp dir
+_TMPFS_CANDIDATE = "/dev/shm/"
+TMPFS_PATH = _TMPFS_CANDIDATE if os.path.isdir(_TMPFS_CANDIDATE) else tempfile.gettempdir() + "/"
 
 # --- Display settings ---
 
