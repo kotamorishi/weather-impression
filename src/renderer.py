@@ -7,14 +7,10 @@ from datetime import datetime
 
 from PIL import Image, ImageDraw, ImageFont
 
-from inky.inky_uc8159 import (
-    BLACK, WHITE, GREEN, RED, YELLOW, ORANGE, BLUE,
-    DESATURATED_PALETTE as COLOR_PALETTE,
-)
-
 from .constants import (
     CANVAS_SIZE, TMPFS_PATH, UNIT_IMPERIAL,
     FontType, ICON_MAP, ICON_COLOR_MAP,
+    Color, COLOR_PALETTE,
 )
 from .weather_data import WeatherData
 
@@ -37,7 +33,7 @@ def temp_color(temp, config):
         return (0, 0, 255)
     if temp > config.hot_temp:
         return (255, 0, 0)
-    return display_color(BLACK)
+    return display_color(Color.BLACK)
 
 
 # --- Font / text helpers ---
@@ -75,8 +71,8 @@ def _get_icon(icon_code):
 
 
 def _get_icon_color(icon_code):
-    """Safely look up an icon color, falling back to BLACK."""
-    return ICON_COLOR_MAP.get(icon_code, BLACK)
+    """Safely look up an icon color, falling back to Color.BLACK."""
+    return ICON_COLOR_MAP.get(icon_code, Color.BLACK)
 
 
 # --- Rendering entry point ---
@@ -90,7 +86,7 @@ def render(config, weather, error_message=None):
         weather: WeatherData dataclass, or None on error.
         error_message: Optional error message to display on error screen.
     """
-    canvas = Image.new("RGB", CANVAS_SIZE, display_color(WHITE))
+    canvas = Image.new("RGB", CANVAS_SIZE, display_color(Color.WHITE))
     draw = ImageDraw.Draw(canvas)
     width, height = CANVAS_SIZE
 
@@ -102,7 +98,7 @@ def render(config, weather, error_message=None):
     if one_time_msg:
         draw.text(
             (width - 10, 2), one_time_msg,
-            display_color(BLACK), anchor="ra",
+            display_color(Color.BLACK), anchor="ra",
             font=get_font(FontType.BOLD, 12),
         )
 
@@ -129,15 +125,15 @@ def render(config, weather, error_message=None):
 
 
 def _draw_error(draw, width, height, error_message=None):
-    draw.rectangle((0, 0, width, height), fill=display_color(ORANGE))
+    draw.rectangle((0, 0, width, height), fill=display_color(Color.ORANGE))
     draw.text(
-        (20, 70), "\uf071", display_color(BLACK),
+        (20, 70), "\uf071", display_color(Color.BLACK),
         anchor="lm", font=get_font(FontType.ICON, 130),
     )
     draw.text(
         (150, 80),
         "Weather information is not available at this time.",
-        display_color(BLACK), anchor="lm",
+        display_color(Color.BLACK), anchor="lm",
         font=get_font(FontType.BOLD, 18),
     )
     msg = error_message or (
@@ -146,7 +142,7 @@ def _draw_error(draw, width, height, error_message=None):
     )
     draw.text(
         (width / 2, height / 2), msg,
-        display_color(BLACK), anchor="mm",
+        display_color(Color.BLACK), anchor="mm",
         font=get_font(FontType.BOLD, 16),
     )
 
@@ -156,11 +152,11 @@ def _draw_header(draw, width, current):
     weekday_str = time.strftime("%a", time.localtime(current.dt))
 
     draw.text(
-        (15, 5), date_str, display_color(BLACK),
+        (15, 5), date_str, display_color(Color.BLACK),
         font=get_font(FontType.BOLD, 64),
     )
     draw.text(
-        (width - 8, 5), weekday_str, display_color(BLACK),
+        (width - 8, 5), weekday_str, display_color(Color.BLACK),
         anchor="ra", font=get_font(FontType.BOLD, 64),
     )
 
@@ -176,7 +172,7 @@ def _draw_current_weather(draw, width, current, config):
     temp_offset = 45 if temp_w < 71 else 20
 
     draw.text(
-        (5 + ox, 35 + oy), "Temperature", display_color(BLACK),
+        (5 + ox, 35 + oy), "Temperature", display_color(Color.BLACK),
         font=get_font(FontType.LIGHT, 24),
     )
     draw.text(
@@ -196,7 +192,7 @@ def _draw_current_weather(draw, width, current, config):
     )
 
     draw.text(
-        (width - 8, 35 + oy), description, display_color(BLACK),
+        (width - 8, 35 + oy), description, display_color(Color.BLACK),
         anchor="ra", font=get_font(FontType.LIGHT, 24),
     )
 
@@ -205,7 +201,7 @@ def _draw_feels_pressure(draw, width, current, config):
     ox = 10
 
     draw.text(
-        (5 + ox, 215), "Feels like", display_color(BLACK),
+        (5 + ox, 215), "Feels like", display_color(Color.BLACK),
         font=get_font(FontType.LIGHT, 24),
     )
     feels_str = format_temperature(current.feels_like)
@@ -221,18 +217,18 @@ def _draw_feels_pressure(draw, width, current, config):
     )
 
     draw.text(
-        (feels_w + 85 + ox, 215), "Pressure", display_color(BLACK),
+        (feels_w + 85 + ox, 215), "Pressure", display_color(Color.BLACK),
         font=get_font(FontType.LIGHT, 24),
     )
     pressure_str = "%d" % current.pressure
     draw.text(
         (feels_w + 90 + ox, 240), pressure_str,
-        display_color(BLACK), font=get_font(FontType.BOLD, 50),
+        display_color(Color.BLACK), font=get_font(FontType.BOLD, 50),
     )
     pressure_w, _ = text_size(draw, pressure_str, get_font(FontType.BOLD, 50))
     draw.text(
         (feels_w + pressure_w + 95 + ox, 264), "hPa",
-        display_color(BLACK), font=get_font(FontType.BOLD, 22),
+        display_color(Color.BLACK), font=get_font(FontType.BOLD, 22),
     )
 
 
@@ -251,15 +247,15 @@ def _draw_alert(draw, width, alert):
 
     draw.text(
         (5 + ox, 215), alert.event.capitalize(),
-        display_color(RED), anchor="la",
+        display_color(Color.RED), anchor="la",
         font=get_font(FontType.LIGHT, 24),
     )
     draw.text(
         (5 + ox, 240), f"{start_str}/{alert.sender_name}",
-        display_color(BLACK), font=get_font(FontType.BOLD, 12),
+        display_color(Color.BLACK), font=get_font(FontType.BOLD, 12),
     )
     draw.text(
-        (5 + ox, 270), desc, display_color(RED),
+        (5 + ox, 270), desc, display_color(Color.RED),
         anchor="la", font=get_font(FontType.BOLD, 14),
     )
 
@@ -320,7 +316,7 @@ def _draw_graph(draw, canvas, width, height, hourly):
     fig = plt.figure()
     fig.set_figheight(graph_h)
     fig.set_figwidth(graph_w)
-    plt.plot(timestamps, pressures, linewidth=3, color=graph_color(RED))
+    plt.plot(timestamps, pressures, linewidth=3, color=graph_color(Color.RED))
     plt.axis("off")
 
     p_min, p_max = 990, 1020
@@ -339,8 +335,8 @@ def _draw_graph(draw, canvas, width, height, hourly):
     fig = plt.figure()
     fig.set_figheight(graph_h)
     fig.set_figwidth(graph_w)
-    plt.plot(timestamps, feels, linewidth=3, color=graph_color(GREEN), linestyle=":")
-    plt.plot(timestamps, temps, linewidth=3, color=graph_color(BLUE))
+    plt.plot(timestamps, feels, linewidth=3, color=graph_color(Color.GREEN), linestyle=":")
+    plt.plot(timestamps, temps, linewidth=3, color=graph_color(Color.BLUE))
 
     for idx in range(1, len(timestamps)):
         h = time.strftime("%-I", time.localtime(timestamps[idx]))
@@ -359,12 +355,12 @@ def _draw_graph(draw, canvas, width, height, hourly):
 
     # Legend
     ox = 10
-    draw.rectangle((5, 430, 20, 446), fill=display_color(RED))
-    draw.text((15 + ox, 428), "Pressure", display_color(BLACK), font=get_font(FontType.BOLD, 16))
-    draw.rectangle((135, 430, 150, 446), fill=display_color(BLUE))
-    draw.text((145 + ox, 428), "Temp", display_color(BLACK), font=get_font(FontType.BOLD, 16))
-    draw.rectangle((265, 430, 280, 446), fill=display_color(GREEN))
-    draw.text((275 + ox, 428), "Feels like", display_color(BLACK), font=get_font(FontType.BOLD, 16))
+    draw.rectangle((5, 430, 20, 446), fill=display_color(Color.RED))
+    draw.text((15 + ox, 428), "Pressure", display_color(Color.BLACK), font=get_font(FontType.BOLD, 16))
+    draw.rectangle((135, 430, 150, 446), fill=display_color(Color.BLUE))
+    draw.text((145 + ox, 428), "Temp", display_color(Color.BLACK), font=get_font(FontType.BOLD, 16))
+    draw.rectangle((265, 430, 280, 446), fill=display_color(Color.GREEN))
+    draw.text((275 + ox, 428), "Feels like", display_color(Color.BLACK), font=get_font(FontType.BOLD, 16))
 
 
 def _draw_sunrise_icon(draw, width, current):
@@ -435,13 +431,13 @@ def _draw_sunrise_graph(canvas, current):
         (0.3, "left", sunset_h, "sunset", sunset_fmt),
     ]:
         plt.text(hour + offset - 0.05, 1.35, ICON_MAP[icon_key],
-                 fontproperties=icon_prop, ha=ha, va="top", color=graph_color(YELLOW))
+                 fontproperties=icon_prop, ha=ha, va="top", color=graph_color(Color.YELLOW))
         plt.text(hour + offset, 1.3, ICON_MAP[icon_key],
-                 fontproperties=icon_prop, ha=ha, va="top", color=graph_color(BLUE))
+                 fontproperties=icon_prop, ha=ha, va="top", color=graph_color(Color.BLUE))
         plt.text(hour + offset, 0.8, fmt, ha=ha, va="top",
-                 fontproperties=text_prop, color=graph_color(BLUE))
+                 fontproperties=text_prop, color=graph_color(Color.BLUE))
 
-    plt.plot(x, y, linewidth=3, color=graph_color(RED))
+    plt.plot(x, y, linewidth=3, color=graph_color(Color.RED))
     plt.axis("off")
 
     plt.savefig(TMPFS_PATH + "day.png", bbox_inches="tight", transparent=True)

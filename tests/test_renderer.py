@@ -9,7 +9,7 @@ from src.renderer import (
     display_color, graph_color, temp_color, get_font,
     render, _get_icon, _get_icon_color,
 )
-from src.constants import FontType, ICON_MAP, UNIT_IMPERIAL
+from src.constants import FontType, ICON_MAP, UNIT_IMPERIAL, Color
 from src.weather_data import WeatherData
 
 
@@ -60,12 +60,10 @@ class TestGetIcon:
 
 class TestGetIconColor:
     def test_known_icon(self):
-        from inky.inky_uc8159 import ORANGE
-        assert _get_icon_color("01d") == ORANGE
+        assert _get_icon_color("01d") == Color.ORANGE
 
     def test_unknown_icon_falls_back_to_black(self):
-        from inky.inky_uc8159 import BLACK
-        assert _get_icon_color("99x") == BLACK
+        assert _get_icon_color("99x") == Color.BLACK
 
 
 class TestDisplayColor:
