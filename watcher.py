@@ -24,18 +24,6 @@ BUTTON_ACTIONS = {
     16: ("mode", "1", "MODE:Alert"),
 }
 
-request = gpiod.request_lines(
-    "/dev/gpiochip0",
-    consumer="weather-impression-watcher",
-    config={
-        tuple(BUTTONS): gpiod.LineSettings(
-            edge_detection=Edge.FALLING,
-            bias=Bias.PULL_UP,
-            debounce_period=timedelta(milliseconds=250),
-        )
-    },
-)
-
 
 def refresh_screen():
     import weather
@@ -61,13 +49,30 @@ def handle_button(pin):
         print(f"Weather update failed: {e}")
 
 
-# Schedule hourly screen refresh
-schedule.every().hour.at(":01").do(refresh_screen)
+def main():
+    request = gpiod.request_lines(
+        "/dev/gpiochip0",
+        consumer="weather-impression-watcher",
+        config={
+            tuple(BUTTONS): gpiod.LineSettings(
+                edge_detection=Edge.FALLING,
+                bias=Bias.PULL_UP,
+                debounce_period=timedelta(milliseconds=250),
+            )
+        },
+    )
 
-# Main loop: poll for button events and run scheduled tasks
-while True:
-    if request.wait_edge_events(timeout=timedelta(seconds=1)):
-        events = request.read_edge_events()
-        for event in events:
-            handle_button(event.line_offset)
-    schedule.run_pending()
+    # Schedule hourly screen refresh
+    schedule.every().hour.at(":01").do(refresh_screen)
+
+    # Main loop: poll for button events and run scheduled tasks
+    while True:
+        if request.wait_edge_events(timeout=timedelta(seconds=1)):
+            events = request.read_edge_events()
+            for event in events:
+                handle_button(event.line_offset)
+        schedule.run_pending()
+
+
+if __name__ == "__main__":
+    main()

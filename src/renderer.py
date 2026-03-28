@@ -1,11 +1,9 @@
 """Weather display rendering for Inky Impression 5.7"."""
 
 import math
-import os
 import re
 import time
 from datetime import datetime
-from enum import Enum
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -14,22 +12,13 @@ from inky.inky_uc8159 import (
     DESATURATED_PALETTE as COLOR_PALETTE,
 )
 
-from .config import PROJECT_ROOT, CANVAS_SIZE, TMPFS_PATH, UNIT_IMPERIAL
-
-# --- Font management ---
-
-class FontType(Enum):
-    THIN = os.path.join(PROJECT_ROOT, "fonts", "Roboto-Thin.ttf")
-    LIGHT = os.path.join(PROJECT_ROOT, "fonts", "Roboto-Light.ttf")
-    BOLD = os.path.join(PROJECT_ROOT, "fonts", "Roboto-Black.ttf")
-    ICON = os.path.join(PROJECT_ROOT, "fonts", "weathericons-regular-webfont.ttf")
-
-
-def get_font(font_type, size=12):
-    return ImageFont.truetype(font_type.value, size)
-
+from .constants import (
+    CANVAS_SIZE, TMPFS_PATH, UNIT_IMPERIAL,
+    FontType, ICON_MAP, ICON_COLOR_MAP,
+)
 
 # --- Color helpers ---
+
 
 def display_color(color_index):
     """Convert a palette index to an RGB tuple (0-255)."""
@@ -50,46 +39,12 @@ def temp_color(temp, config):
     return display_color(BLACK)
 
 
-# --- Icon / color mappings ---
-
-ICON_MAP = {
-    "01d": "\uf00d", "01n": "\uf02e",   # clear sky
-    "02d": "\uf002", "02n": "\uf031",   # few clouds
-    "03d": "\uf041", "03n": "\uf041",   # scattered clouds
-    "04d": "\uf013", "04n": "\uf013",   # broken clouds
-    "09d": "\uf004", "09n": "\uf024",   # shower rain
-    "10d": "\uf00b", "10n": "\uf02b",   # rain
-    "11d": "\uf00e", "11n": "\uf02c",   # thunderstorm
-    "13d": "\uf00a", "13n": "\uf038",   # snow
-    "50d": "\uf003", "50n": "\uf023",   # fog
-    "celsius": "\uf03c",
-    "fahrenheit": "\uf045",
-    "sunrise": "\uf051",
-    "sunset": "\uf052",
-}
-
-# Clock icons for 12-hour display
-ICON_MAP["clock0"] = "\uf089"
-for _h in range(1, 13):
-    ICON_MAP[f"clock{_h}"] = chr(0xF089 + _h)
-# clock12 is same as clock0
-ICON_MAP["clock12"] = "\uf089"
-
-ICON_COLOR_MAP = {
-    "01d": ORANGE, "01n": YELLOW,
-    "02d": BLACK, "02n": BLACK,
-    "03d": BLACK, "03n": BLACK,
-    "04d": BLACK, "04n": BLACK,
-    "09d": BLACK, "09n": BLACK,
-    "10d": BLUE, "10n": BLUE,
-    "11d": RED, "11n": RED,
-    "13d": BLUE, "13n": BLUE,
-    "50d": BLACK, "50n": BLACK,
-    "sunrise": BLACK, "sunset": BLACK,
-}
+# --- Font / text helpers ---
 
 
-# --- Text helpers ---
+def get_font(font_type, size=12):
+    return ImageFont.truetype(font_type.value, size)
+
 
 def format_temperature(temp):
     """Format temperature, avoiding '-0'."""
@@ -115,15 +70,21 @@ def font_text_width(font, text):
 
 # --- Rendering entry point ---
 
-def render(config, weather_data):
-    """Render the weather display and return a PIL Image."""
+
+def render(config, weather_data, error_message=None):
+    """Render the weather display and return a PIL Image.
+
+    Args:
+        config: Config object (may be None if loading failed).
+        weather_data: Parsed weather API response dict, or None on error.
+        error_message: Optional error message to display on error screen.
+    """
     canvas = Image.new("RGB", CANVAS_SIZE, display_color(WHITE))
     draw = ImageDraw.Draw(canvas)
     width, height = CANVAS_SIZE
 
-    # No weather data — show error screen
     if weather_data is None:
-        _draw_error(draw, width, height, config)
+        _draw_error(draw, width, height, error_message)
         return canvas
 
     one_time_msg = config.consume_one_time_message()
@@ -156,7 +117,8 @@ def render(config, weather_data):
 
 # --- Section renderers ---
 
-def _draw_error(draw, width, height, config):
+
+def _draw_error(draw, width, height, error_message=None):
     draw.rectangle((0, 0, width, height), fill=display_color(ORANGE))
     draw.text(
         (20, 70), "\uf071", display_color(BLACK),
@@ -168,10 +130,10 @@ def _draw_error(draw, width, height, config):
         display_color(BLACK), anchor="lm",
         font=get_font(FontType.BOLD, 18),
     )
-    msg = getattr(config, "one_time_message", "") or ""
-    if not msg:
-        msg = "Configuration file is not found or settings are wrong.\n"
-        msg += "Please check config.txt\n\nAlso check your internet connection."
+    msg = error_message or (
+        "Configuration file is not found or settings are wrong.\n"
+        "Please check config.txt\n\nAlso check your internet connection."
+    )
     draw.text(
         (width / 2, height / 2), msg,
         display_color(BLACK), anchor="mm",
@@ -201,7 +163,6 @@ def _draw_current_weather(draw, width, current, config):
 
     ox, oy = 10, 40
 
-    # Temperature
     temp_str = format_temperature(temp)
     temp_w, _ = text_size(draw, temp_str, get_font(FontType.BOLD, 120))
     temp_offset = 45 if temp_w < 71 else 20
@@ -220,14 +181,12 @@ def _draw_current_weather(draw, width, current, config):
         anchor="la", font=get_font(FontType.ICON, 80),
     )
 
-    # Weather icon
     draw.text(
         (440 + ox, 40 + oy), ICON_MAP[icon],
         display_color(ICON_COLOR_MAP[icon]),
         anchor="ma", font=get_font(FontType.ICON, 160),
     )
 
-    # Description
     draw.text(
         (width - 8, 35 + oy), description, display_color(BLACK),
         anchor="ra", font=get_font(FontType.LIGHT, 24),
@@ -472,7 +431,6 @@ def _draw_sunrise_graph(canvas, current):
     plt.axvline(x=sunrise_h, color="blue", linestyle="--")
     plt.axvline(x=sunset_h, color="blue", linestyle="--")
 
-    # Sunrise/sunset icons with shadow effect
     for offset, ha, hour, icon_key, fmt in [
         (-0.3, "right", sunrise_h, "sunrise", sunrise_fmt),
         (0.3, "left", sunset_h, "sunset", sunset_fmt),
