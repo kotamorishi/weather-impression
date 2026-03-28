@@ -12,22 +12,32 @@ from src.weather_api import fetch_weather
 from src.renderer import render
 from src.display import DisplayController
 
+_display = None
+
+
+def _get_display():
+    """Lazily initialize and reuse a single DisplayController."""
+    global _display
+    if _display is None:
+        _display = DisplayController()
+    return _display
+
 
 def update():
-    display = DisplayController()
+    display = _get_display()
     display.set_busy(True)
     try:
+        config = None
+        weather_data = None
+        error_message = None
         try:
             config = Config()
             weather_data = fetch_weather(config)
         except Exception as e:
             print(f"Failed to load weather data: {e}")
-            weather_data = None
-            config = Config.__new__(Config)
-            config.one_time_message = str(e)
-            config.mode = "0"
+            error_message = str(e)
 
-        image = render(config, weather_data)
+        image = render(config, weather_data, error_message=error_message)
         display.show(image)
     finally:
         display.set_busy(False)

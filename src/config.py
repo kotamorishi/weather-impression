@@ -1,18 +1,11 @@
-"""Configuration management for weather-impression."""
+"""User configuration management for weather-impression."""
 
 import configparser
 import os
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from .constants import PROJECT_ROOT
+
 CONFIG_PATH = os.path.join(PROJECT_ROOT, "config.txt")
-TMPFS_PATH = "/dev/shm/"
-
-CANVAS_WIDTH = 600
-CANVAS_HEIGHT = 448
-CANVAS_SIZE = (CANVAS_WIDTH, CANVAS_HEIGHT)
-SATURATION = 0.5
-
-UNIT_IMPERIAL = "imperial"
 
 
 class Config:

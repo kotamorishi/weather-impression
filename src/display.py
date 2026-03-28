@@ -5,7 +5,7 @@ from gpiod.line import Direction, Value
 
 from inky.inky_uc8159 import Inky
 
-from .config import SATURATION
+from .constants import SATURATION
 
 LED_PIN = 4
 GPIO_CHIP = "/dev/gpiochip0"

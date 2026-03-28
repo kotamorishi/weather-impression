@@ -83,15 +83,17 @@ def main():
 
     print(colored("\nDo you want to save the configuration? (y/n)", Colors.YELLOW))
     if input().strip().lower() == "y":
-        config.set_value("LAT", latitude)
-        config.set_value("LON", longitude)
-        config.set_value("API_KEY", api_key)
-        config.set_value("FORECAST_INTERVAL", forecast_interval)
-        config.set_value("one_time_message", "Configured.")
-        config.set_value("mode", "2")
-        config.set_value("TEMP_UNIT", "metric")
-        config.set_value("cold_temp", "7")
-        config.set_value("hot_temp", "27")
+        config.set_values({
+            "LAT": latitude,
+            "LON": longitude,
+            "API_KEY": api_key,
+            "FORECAST_INTERVAL": forecast_interval,
+            "one_time_message": "Configured.",
+            "mode": "2",
+            "TEMP_UNIT": "metric",
+            "cold_temp": "7",
+            "hot_temp": "27",
+        })
         print(colored("Configuration saved.", Colors.CYAN))
     else:
         print(colored("Configuration not saved.", Colors.RED))
