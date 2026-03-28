@@ -8,12 +8,11 @@ from datetime import timedelta
 import gpiod
 from gpiod.line import Bias, Edge
 import schedule
-import time
 
 # Ensure the project root is in the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from src.config import Config, CONFIG_PATH
+from src.config import Config
 
 # GPIO button pins (top to bottom: A, B, C, D)
 BUTTONS = [5, 6, 16, 24]

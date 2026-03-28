@@ -17,18 +17,20 @@ def update():
     display = DisplayController()
     display.set_busy(True)
     try:
-        config = Config()
-        weather_data = fetch_weather(config)
-    except Exception as e:
-        print(f"Failed to load weather data: {e}")
-        weather_data = None
-        config = Config.__new__(Config)
-        config.one_time_message = str(e)
-        config.mode = "0"
+        try:
+            config = Config()
+            weather_data = fetch_weather(config)
+        except Exception as e:
+            print(f"Failed to load weather data: {e}")
+            weather_data = None
+            config = Config.__new__(Config)
+            config.one_time_message = str(e)
+            config.mode = "0"
 
-    image = render(config, weather_data)
-    display.show(image)
-    display.set_busy(False)
+        image = render(config, weather_data)
+        display.show(image)
+    finally:
+        display.set_busy(False)
 
 
 if __name__ == "__main__":

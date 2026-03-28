@@ -168,8 +168,10 @@ def _draw_error(draw, width, height, config):
         display_color(BLACK), anchor="lm",
         font=get_font(FontType.BOLD, 18),
     )
-    msg = "Configuration file is not found or settings are wrong.\n"
-    msg += f"Please check config.txt\n\nAlso check your internet connection."
+    msg = getattr(config, "one_time_message", "") or ""
+    if not msg:
+        msg = "Configuration file is not found or settings are wrong.\n"
+        msg += "Please check config.txt\n\nAlso check your internet connection."
     draw.text(
         (width / 2, height / 2), msg,
         display_color(BLACK), anchor="mm",
@@ -337,7 +339,6 @@ def _draw_forecast(draw, width, weather_data, config):
 
 def _draw_graph(draw, canvas, width, height, weather_data):
     import matplotlib.pyplot as plt
-    from matplotlib import font_manager as fm
     import numpy as np
 
     timestamps, temps, feels, pressures = [], [], [], []
@@ -368,8 +369,8 @@ def _draw_graph(draw, canvas, width, height, weather_data):
 
     plt.savefig(TMPFS_PATH + "pressure.png", bbox_inches="tight", transparent=True)
     plt.close(fig)
-    img = Image.open(TMPFS_PATH + "pressure.png")
-    canvas.paste(img, (-35, 330), img)
+    with Image.open(TMPFS_PATH + "pressure.png") as img:
+        canvas.paste(img, (-35, 330), img)
 
     # Temperature + feels-like graph
     fig = plt.figure()
@@ -390,8 +391,8 @@ def _draw_graph(draw, canvas, width, height, weather_data):
     plt.axis("off")
     plt.savefig(TMPFS_PATH + "temp.png", bbox_inches="tight", transparent=True)
     plt.close(fig)
-    img = Image.open(TMPFS_PATH + "temp.png")
-    canvas.paste(img, (-35, 300), img)
+    with Image.open(TMPFS_PATH + "temp.png") as img:
+        canvas.paste(img, (-35, 300), img)
 
     # Legend
     ox = 10
@@ -488,5 +489,5 @@ def _draw_sunrise_graph(canvas, current):
 
     plt.savefig(TMPFS_PATH + "day.png", bbox_inches="tight", transparent=True)
     plt.close(fig)
-    img = Image.open(TMPFS_PATH + "day.png")
-    canvas.paste(img, (-35, 300), img)
+    with Image.open(TMPFS_PATH + "day.png") as img:
+        canvas.paste(img, (-35, 300), img)

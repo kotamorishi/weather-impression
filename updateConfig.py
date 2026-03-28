@@ -62,7 +62,18 @@ def main():
     longitude = prompt("Longitude", config.lon)
     api_key = prompt("API Key", config.api_key)
     print(colored("You can get your key at https://openweathermap.org", Colors.BLUE))
-    forecast_interval = prompt("Forecast interval (hours, 1-12)", str(config.forecast_interval))
+
+    while True:
+        raw_interval = prompt("Forecast interval (hours, 1-12)", str(config.forecast_interval))
+        try:
+            interval_int = int(raw_interval)
+            if 1 <= interval_int <= 12:
+                forecast_interval = str(interval_int)
+                break
+            else:
+                print(colored("Forecast interval must be between 1 and 12.", Colors.RED))
+        except ValueError:
+            print(colored("Forecast interval must be an integer between 1 and 12.", Colors.RED))
 
     print()
     print(f"Latitude:  {colored(latitude, Colors.GREEN)}")
