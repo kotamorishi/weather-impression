@@ -27,6 +27,14 @@ else
     echo "  raspi-config not found. Please enable SPI and I2C manually."
 fi
 
+# Release SPI CS0 pin so Inky can control it via GPIO
+BOOT_CONFIG="/boot/firmware/config.txt"
+if [ -f "$BOOT_CONFIG" ] && ! grep -q "dtoverlay=spi0-0cs" "$BOOT_CONFIG"; then
+    sudo sed -i '/dtparam=spi=on/a dtoverlay=spi0-0cs' "$BOOT_CONFIG"
+    echo "  Added spi0-0cs overlay (reboot required)."
+    NEEDS_REBOOT=1
+fi
+
 # Clone or update the project
 echo "[3/6] Setting up weather-impression..."
 if [ -d "$INSTALL_DIR" ]; then
@@ -83,3 +91,9 @@ echo "  3. Reboot to start the weather station"
 echo ""
 echo "To test immediately:"
 echo "  $VENV_DIR/bin/python3 $INSTALL_DIR/weather.py"
+
+if [ "${NEEDS_REBOOT:-0}" = "1" ]; then
+    echo ""
+    echo "*** IMPORTANT: A reboot is required to apply SPI overlay changes. ***"
+    echo "    Run: sudo reboot"
+fi
