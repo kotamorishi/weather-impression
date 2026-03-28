@@ -47,16 +47,13 @@ def handle_button(pin):
 
     if pin in BUTTON_ACTIONS:
         key, value, message = BUTTON_ACTIONS[pin]
-        config.set_value("one_time_message", message)
-        config.set_value(key, value)
+        config.set_values({"one_time_message": message, key: value})
     elif pin == 24:
         # Toggle temperature unit
         if config.unit == "imperial":
-            config.set_value("one_time_message", "Unit:Metric")
-            config.set_value("TEMP_UNIT", "metric")
+            config.set_values({"one_time_message": "Unit:Metric", "TEMP_UNIT": "metric"})
         else:
-            config.set_value("one_time_message", "Unit:Imperial")
-            config.set_value("TEMP_UNIT", "imperial")
+            config.set_values({"one_time_message": "Unit:Imperial", "TEMP_UNIT": "imperial"})
 
     try:
         refresh_screen()

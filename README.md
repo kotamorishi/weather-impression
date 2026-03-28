@@ -31,7 +31,7 @@ sudo apt -y install libtiff6  # or libtiff5 on older OS
 python3 -m venv ~/.virtualenvs/weather-impression
 source ~/.virtualenvs/weather-impression/bin/activate
 
-pip3 install Pillow numpy matplotlib gpiod schedule requests
+pip3 install inky Pillow numpy matplotlib "gpiod>=2" schedule requests
 ```
 
 #### 2-2 Install Inky driver

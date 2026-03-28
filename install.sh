@@ -32,7 +32,7 @@ python3 -m venv "$VENV_DIR"
 source "$VENV_DIR/bin/activate"
 
 pip3 install --upgrade pip
-pip3 install Pillow numpy matplotlib gpiod schedule requests
+pip3 install inky Pillow numpy matplotlib "gpiod>=2" schedule requests
 
 deactivate
 
@@ -58,7 +58,7 @@ fi
 # Set up cron job
 echo "[5/5] Setting up cron job..."
 CRON_CMD="@reboot $VENV_DIR/bin/python3 $INSTALL_DIR/watcher.py >/dev/null 2>&1"
-(sudo crontab -l 2>/dev/null | grep -v "weather-impression/watcher.py"; echo "$CRON_CMD") | sudo crontab -
+(sudo crontab -l 2>/dev/null | grep -v "weather-impression/watcher.py" || true; echo "$CRON_CMD") | sudo crontab -
 
 echo ""
 echo "=== Installation complete! ==="

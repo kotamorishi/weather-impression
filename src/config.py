@@ -39,18 +39,29 @@ class Config:
         except (configparser.NoSectionError, configparser.NoOptionError):
             self.one_time_message = ""
 
+    def _write(self):
+        """Atomically write the current configuration to disk."""
+        tmp_path = self.path + ".tmp"
+        with open(tmp_path, "w") as f:
+            self._parser.write(f)
+        os.replace(tmp_path, self.path)
+
     def consume_one_time_message(self):
         """Read and clear the one-time message from the config file."""
         msg = self.one_time_message
         if msg:
             self._parser.set("openweathermap", "one_time_message", "")
-            with open(self.path, "w") as f:
-                self._parser.write(f)
+            self._write()
             self.one_time_message = ""
         return msg
 
     def set_value(self, key, value):
         """Set a config value and save to disk."""
         self._parser.set("openweathermap", key, value)
-        with open(self.path, "w") as f:
-            self._parser.write(f)
+        self._write()
+
+    def set_values(self, mapping):
+        """Set multiple config values and write once."""
+        for key, value in mapping.items():
+            self._parser.set("openweathermap", key, value)
+        self._write()
