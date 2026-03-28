@@ -6,7 +6,9 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+import shutil
 from src.config import Config, CONFIG_PATH
+from src.constants import PROJECT_ROOT
 
 
 class Colors:
@@ -53,6 +55,15 @@ def main():
     """, Colors.YELLOW))
 
     print(colored(f"Config file: {CONFIG_PATH}", Colors.BLUE))
+
+    if not os.path.exists(CONFIG_PATH):
+        default_path = os.path.join(PROJECT_ROOT, "config.txt.default")
+        if os.path.exists(default_path):
+            shutil.copy(default_path, CONFIG_PATH)
+            print(colored("Created config.txt from default template.", Colors.CYAN))
+        else:
+            print(colored(f"Error: {CONFIG_PATH} not found and no default template available.", Colors.RED))
+            return
 
     config = Config()
 
